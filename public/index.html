@@ -38,8 +38,8 @@
   <div id="login-modal" class="modal">
     <div class="modal-content">
         <div>
-        <span class="close-button">&times;</span>
-        <h2>Login do Árbitro</h2>
+          <span class="close-button">&times;</span>
+          <h2>Login do Árbitro</h2>
         </div>
         <form id="login-form">
         <div>
@@ -51,8 +51,66 @@
           <input type="password" id="password" name="password" required>
         </div>
         <div class="form-actions">
-        <button type="submit">Entrar</button>
-        <p id="login-error"></p>
+          <button type="submit">Entrar</button>
+          <p id="login-error"></p>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="create-referee-modal" class="modal">
+    <div class="modal-content">
+      <div>
+        <span class="close-button">&times;</span>
+        <h2>Criar Novo Árbitro</h2>
+      </div>
+      <form id="create-referee-form">
+        <div style="margin-bottom: 1rem;">
+          <label for="referee-username">Usuário:</label>
+          <input type="text" id="referee-username" name="username" required>
+        </div>
+        <div style="margin-bottom: 1rem;">
+          <label for="referee-password">Senha:</label>
+          <input type="password" id="referee-password" name="password" required>
+        </div>
+        <div class="form-actions">
+          <button type="submit">Criar Árbitro</button>
+          <p id="login-error"></p>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="create-tournament-modal" class="modal">
+    <div class="modal-content">
+      <div>
+        <span class="close-button">&times;</span>
+        <h2>Criar Novo Torneio</h2>
+      </div>
+      <form id="create-tournament-form">
+        <div style="margin-bottom: 1rem;">
+          <label for="tournament-name">Nome do Torneio:</label>
+          <input type="text" id="tournament-name" name="name" required>
+        </div>
+        <div style="margin-bottom: 1rem;">
+          <label for="tournament-date">Data:</label>
+          <input type="date" id="tournament-date" name="date" required>
+        </div>
+        <div style="margin-bottom: 1rem;">
+        <label for="tournament-location">Localização:</label>
+        <input type="text" id="tournament-location" name="location">
+      </div>
+      <div style="margin-bottom: 1rem;">
+        <label for="tournament-description">Descrição:</label>
+        <textarea id="tournament-description" name="description" rows="3"></textarea>
+      </div>
+      <div style="margin-bottom: 1rem;">
+        <label for="tournament-athletes-pdf">Lista de Atletas (PDF):</label>
+        <input type="file" id="tournament-athletes-pdf" name="pdfFile" accept=".pdf">
+      </div>
+        <div class="form-actions">
+          <button type="submit">Criar Torneio</button>
+          <p class="form-error"></p>
         </div>
       </form>
     </div>

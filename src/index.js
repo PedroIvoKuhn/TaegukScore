@@ -4,14 +4,13 @@ const path = require('path');
 const adminRoutes = require('./routes/adminRoutes');
 const tournamentRoutes = require('./routes/tournamentRoutes');
 const authRoutes = require('./routes/authRoutes');
+const athleteRoutes = require('./routes/athleteRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// === MIDDLEWARES ESSENCIAIS ===
-// Habilita o Express para entender requisições com corpo em JSON
+// === MIDDLEWARES ===
 app.use(express.json()); 
-// Habilita o Express para entender dados de formulários tradicionais
 app.use(express.urlencoded({ extended: true }));
 
 // === SERVIR ARQUIVOS ESTÁTICOS (SUA PASTA 'public') ===
@@ -23,8 +22,8 @@ app.use(express.static(path.join(__dirname, '..', 'public')));
 app.use('/api/admin', adminRoutes);
 app.use('/api/tournaments', tournamentRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/athletes', athleteRoutes);
 
-// Iniciar o servidor
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
   console.log(`Acesse http://localhost:${PORT}`);

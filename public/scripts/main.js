@@ -6,11 +6,22 @@ document.addEventListener('DOMContentLoaded', () => {
   const navLoggedIn = document.getElementById('nav-logged-in');
   const usernameDisplay = document.getElementById('username-display');
   const logoutBtn = document.getElementById('logout-btn');
+
   const adminControls = document.getElementById('admin-controls');
+  const createTournamentBtn = document.getElementById('create-tournament-btn');
+  const createRefereeBtn = document.getElementById('create-referee-btn');
+
+  const createRefereeModal = document.getElementById('create-referee-modal');
+  const createRefereeForm = document.getElementById('create-referee-form');
+
+  const createTournamentModal = document.getElementById('create-tournament-modal');
+  const createTournamentForm = document.getElementById('create-tournament-form');
+
+  const allModals = document.querySelectorAll('.modal');
+  const allCloseButtons = document.querySelectorAll('.close-button');
 
   const loginModal = document.getElementById('login-modal');
   const loginBtn = document.getElementById('login-btn');
-  const closeModalBtn = document.querySelector('.close-button');
   const loginForm = document.getElementById('login-form');
   const loginError = document.getElementById('login-error');
 
@@ -65,7 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <h3>${tourney.name}</h3>
           <p>Data: ${new Date(tourney.date).toLocaleDateString('pt-BR')}</p>
           <p>Organizador: ${tourney.organizer.username}</p>
-          <a href="#">Ver Torneio</a>
+          <a href="/tournament.html?id=${tourney.id}">Ver Detalhes do Torneio</a>
         `;
         tournamentsContainer.appendChild(card);
       });
@@ -107,12 +118,129 @@ document.addEventListener('DOMContentLoaded', () => {
     updateNavbar();
   }
 
-  loginBtn.addEventListener('click', () => {
-    loginModal.style.display = 'flex';
+  async function handleCreateReferee(event) {
+    event.preventDefault();
+    const form = event.target;
+    const errorP = form.querySelector('.form-error');
+    errorP.textContent = '';
+
+    const username = form.username.value;
+    const password = form.password.value;
+    const token = localStorage.getItem('token');
+
+    try {
+      const response = await fetch('/api/admin/create-referee', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ username, password })
+      });
+
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.error || 'Não foi possível criar o árbitro.');
+      }
+      
+      alert('Árbitro criado com sucesso!');
+      createRefereeModal.style.display = 'none';
+      form.reset();
+
+    } catch (error) {
+      errorP.textContent = error.message;
+    }
+  }
+
+  async function handleCreateTournament(event) {
+  event.preventDefault();
+  const form = createTournamentForm; 
+  const errorP = form.querySelector('.form-error');
+  errorP.textContent = '';
+
+  const token = localStorage.getItem('token');
+
+  const tournamentData = {
+    name: form.name.value,
+    date: form.date.value,
+    location: form.location.value,
+    description: form.description.value
+  };
+  
+  const pdfFile = form.pdfFile.files[0];
+
+  try {
+    const createResponse = await fetch('/api/tournaments', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(tournamentData)
+    });
+
+    if (!createResponse.ok) {
+      const errData = await createResponse.json();
+      throw new Error(errData.error || 'Não foi possível criar o torneio.');
+    }
+
+    const newTournament = await createResponse.json();
+
+    if (pdfFile) {
+      const formData = new FormData();
+      formData.append('pdfFile', pdfFile);
+
+      const uploadResponse = await fetch(`/api/athletes/upload/tournament/${newTournament.id}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      });
+
+      if (!uploadResponse.ok) {
+        const errData = await uploadResponse.json();
+        throw new Error(`Torneio criado, mas falha no upload do PDF: ${errData.error}`);
+      }
+    }
+
+    alert('Torneio e atletas cadastrados com sucesso!');
+    createTournamentModal.style.display = 'none';
+    form.reset();
+    fetchTournaments();
+
+  } catch (error) {
+    errorP.textContent = error.message;
+  }
+}
+
+  if (createRefereeBtn) {
+    createRefereeBtn.addEventListener('click', () => {
+      createRefereeModal.style.display = 'flex';
+    });
+  }
+  if (createTournamentBtn) {
+    createTournamentBtn.addEventListener('click', () => {
+      createTournamentModal.style.display = 'flex';
+    });
+  }
+
+  allCloseButtons.forEach(button => {
+    button.addEventListener('click', () => {
+      button.closest('.modal').style.display = 'none';
+    });
   });
 
-  closeModalBtn.addEventListener('click', () => {
-    loginModal.style.display = 'none';
+  window.addEventListener('click', (event) => {
+    allModals.forEach(modal => {
+      if (event.target == modal) {
+        modal.style.display = 'none';
+      }
+    });
+  });
+
+  loginBtn.addEventListener('click', () => {
+    loginModal.style.display = 'flex';
   });
 
   window.addEventListener('click', (event) => {
@@ -123,6 +251,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   loginForm.addEventListener('submit', handleLogin);
   logoutBtn.addEventListener('click', handleLogout);
+
+  createRefereeForm.addEventListener('submit', handleCreateReferee);
+  createTournamentForm.addEventListener('submit', handleCreateTournament);
 
   updateNavbar();
   fetchTournaments();

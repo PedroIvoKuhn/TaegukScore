@@ -32,6 +32,8 @@ model Tournament {
   id          Int        @id @default(autoincrement())
   name        String
   date        DateTime
+  location    String?
+  description String?
   
   // Relacionamento: Um torneio pertence a um organizador (User com role ADMIN)
   organizer   User       @relation("OrganizerToTournament", fields: [organizerId], references: [id])
