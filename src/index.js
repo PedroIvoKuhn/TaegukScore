@@ -2,6 +2,8 @@ const express = require('express');
 const path = require('path');
 
 const adminRoutes = require('./routes/adminRoutes');
+const tournamentRoutes = require('./routes/tournamentRoutes');
+const authRoutes = require('./routes/authRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -19,6 +21,8 @@ app.use(express.static(path.join(__dirname, '..', 'public')));
 
 // === ROTAS DA API ===
 app.use('/api/admin', adminRoutes);
+app.use('/api/tournaments', tournamentRoutes);
+app.use('/api/auth', authRoutes);
 
 // Iniciar o servidor
 app.listen(PORT, () => {

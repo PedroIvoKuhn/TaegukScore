@@ -1,23 +1,63 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../css/index.css">
-    <title>Árbitros</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TaegukScore - Torneios</title>
+  <link rel="stylesheet" href="/css/index.css"> <style>
+  </style>
 </head>
 <body>
-    <div class="section">
-        <h1>Escolha o numero de  árbitros</h1>
-        <button onclick="numArbitro(3)">3 Árbitros</button>
-        <button onclick="numArbitro(5)">5 Árbitros</button>
-        <button onclick="numArbitro(7)">7 Árbitros</button>
-    </div>
 
-    <script>
-        function numArbitro(num) {
-            window.location.href = '/pages/grades.html?arbitros=' + num;
-        }
-    </script>
+  <nav class="navbar">
+    <a href="/">TaegukScore</a>
+    <div class="nav-auth">
+      <div id="nav-logged-out">
+        <button id="login-btn">Login do Árbitro</button>
+      </div>
+      <div id="nav-logged-in" style="display: none;">
+        <span id="username-display"></span>
+        <button id="logout-btn">Logout</button>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <section id="admin-controls"">
+      <h2>Painel do Administrador</h2>
+      <button id="create-tournament-btn">Criar Novo Torneio</button>
+      <button id="create-referee-btn">Criar Novo Árbitro</button>
+    </section>
+    <section class="tournament-list">
+      <h1>Próximos Torneios</h1>
+      <div id="tournaments-container">
+        </div>
+    </section>
+  </main>
+
+  <div id="login-modal" class="modal">
+    <div class="modal-content">
+        <div>
+        <span class="close-button">&times;</span>
+        <h2>Login do Árbitro</h2>
+        </div>
+        <form id="login-form">
+        <div>
+          <label for="username">Usuário:</label>
+          <input type="text" id="username" name="username" required>
+        </div>
+        <div>
+          <label for="password">Senha:</label>
+          <input type="password" id="password" name="password" required>
+        </div>
+        <div class="form-actions">
+        <button type="submit">Entrar</button>
+        <p id="login-error"></p>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/scripts/main.js"></script>
 </body>
 </html>
