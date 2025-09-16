@@ -1,0 +1,83 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Papéis de usuário que podem existir no sistema
+enum Role {
+  ADMIN
+  REFEREE
+}
+
+// Modelo para usuários (tanto Admin quanto Árbitros)
+model User {
+  id                Int      @id @default(autoincrement())
+  username          String   @unique // Usado para o login
+  password          String   // A senha deve ser sempre criptografada
+  role              Role     @default(REFEREE) // O padrão é ser um árbitro
+
+  // Relacionamentos:
+  // Um ADMIN pode criar vários torneios
+  createdTournaments Tournament[] @relation("OrganizerToTournament")
+  // Um ÁRBITRO pode submeter várias notas
+  submittedScores    Score[]      @relation("RefereeToScore")
+}
+
+// Modelo para os Torneios
+model Tournament {
+  id          Int        @id @default(autoincrement())
+  name        String
+  date        DateTime
+  
+  // Relacionamento: Um torneio pertence a um organizador (User com role ADMIN)
+  organizer   User       @relation("OrganizerToTournament", fields: [organizerId], references: [id])
+  organizerId Int
+
+  // Relacionamento: Um torneio tem várias categorias
+  categories  Category[]
+}
+
+// Modelo para as Categorias dentro de um torneio
+model Category {
+  id           Int       @id @default(autoincrement())
+  name         String    // Ex: "Faixa Preta - Sub 21 Masculino"
+  
+  // Relacionamento: Uma categoria pertence a um torneio
+  tournament   Tournament @relation(fields: [tournamentId], references: [id])
+  tournamentId Int
+
+  // Relacionamento: Uma categoria tem vários atletas
+  athletes     Athlete[]
+}
+
+// Modelo para os Atletas (eles não têm login, são apenas registros)
+model Athlete {
+  id         Int      @id @default(autoincrement())
+  name       String
+  
+  // Relacionamento: Um atleta pertence a uma categoria
+  category   Category @relation(fields: [categoryId], references: [id])
+  categoryId Int
+
+  // Relacionamento: Um atleta pode receber várias notas
+  scores     Score[]
+}
+
+// Modelo para a Nota de um árbitro para um atleta
+model Score {
+  id           Int     @id @default(autoincrement())
+  precision    Float   // Nota de precisão (0-4)
+  presentation Float   // Nota de apresentação (0-6)
+  
+  // Relacionamento: A nota é para um atleta específico
+  athlete      Athlete @relation(fields: [athleteId], references: [id])
+  athleteId    Int
+  
+  // Relacionamento: A nota foi dada por um árbitro (User com role REFEREE) específico
+  referee      User    @relation("RefereeToScore", fields: [refereeId], references: [id])
+  refereeId    Int
+}
