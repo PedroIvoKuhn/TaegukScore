@@ -10,33 +10,39 @@ exports.uploadAthletesFromPDF = async (req, res) => {
 
   try {
     const data = await pdf(req.file.buffer);
-    const text = data.text;
-
-    const lines = text.split('\n').filter(line => line.trim() !== ''); // Divide o texto em linhas e remove as vazias
+    const lines = data.text.split('\n').filter(line => line.trim() !== '');
     
-    let currentCategory = null;
+    let currentMasterCategory = null;
 
     for (const line of lines) {
       if (line.startsWith('## ')) {
         const categoryName = line.substring(3).trim();
 
-        currentCategory = await prisma.category.create({
+        currentMasterCategory = await prisma.category.findUnique({
+          where: { name: categoryName },
+        });
+
+        if (!currentMasterCategory) {
+          console.warn(`Aviso: Categoria "${categoryName}" do PDF não foi encontrada na tabela mestre e será ignorada.`);
+          continue;
+        }
+
+        await prisma.categoryInTournament.create({
           data: {
-            name: categoryName,
             tournamentId: parseInt(tournamentId),
+            categoryId: currentMasterCategory.id,
           },
         });
-        console.log(`Categoria criada: ${categoryName}`);
       } 
-      else if (/^\d+\.\s/.test(line) && currentCategory) {
+      else if (/^\d+\.\s/.test(line) && currentMasterCategory) {
         const athleteName = line.replace(/^\d+\.\s/, '').trim();
         await prisma.athlete.create({
           data: {
             name: athleteName,
-            categoryId: currentCategory.id,
+            tournamentId: parseInt(tournamentId),
+            categoryId: currentMasterCategory.id,
           },
         });
-        console.log(`Atleta adicionado: ${athleteName} em ${currentCategory.name}`);
       }
     }
 

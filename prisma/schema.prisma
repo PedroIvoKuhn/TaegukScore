@@ -15,71 +15,89 @@ enum Role {
 
 // Modelo para usuários (tanto Admin quanto Árbitros)
 model User {
-  id                Int      @id @default(autoincrement())
-  username          String   @unique // Usado para o login
-  password          String   // A senha deve ser sempre criptografada
-  role              Role     @default(REFEREE) // O padrão é ser um árbitro
-
-  // Relacionamentos:
-  // Um ADMIN pode criar vários torneios
+  id                 Int      @id @default(autoincrement())
+  username           String   @unique
+  password           String
+  role               Role     @default(REFEREE)
+  
   createdTournaments Tournament[] @relation("OrganizerToTournament")
-  // Um ÁRBITRO pode submeter várias notas
   submittedScores    Score[]      @relation("RefereeToScore")
+  
+  // Relação N-M: Um árbitro pode estar em vários torneios
+  tournaments        RefereesInTournament[]
 }
 
-// Modelo para os Torneios
 model Tournament {
-  id          Int        @id @default(autoincrement())
-  name        String
-  date        DateTime
-  location    String?
-  description String?
+  id           Int      @id @default(autoincrement())
+  name         String
+  date         DateTime
+  location  String?
+  description    String?
   
-  // Relacionamento: Um torneio pertence a um organizador (User com role ADMIN)
-  organizer   User       @relation("OrganizerToTournament", fields: [organizerId], references: [id])
-  organizerId Int
-
-  // Relacionamento: Um torneio tem várias categorias
-  categories  Category[]
+  organizer    User     @relation("OrganizerToTournament", fields: [organizerId], references: [id])
+  organizerId  Int
+  
+  categories   CategoryInTournament[]
+  athletes     Athlete[]
+  
+  // Relação N-M: Um torneio tem vários árbitros
+  referees     RefereesInTournament[]
 }
 
-// Modelo para as Categorias dentro de um torneio
-model Category {
-  id           Int       @id @default(autoincrement())
-  name         String    // Ex: "Faixa Preta - Sub 21 Masculino"
-  
-  // Relacionamento: Uma categoria pertence a um torneio
+// Tabela de Junção para a relação N-M (Árbitros em Torneios)
+model RefereesInTournament {
+  referee      User       @relation(fields: [refereeId], references: [id])
+  refereeId    Int
   tournament   Tournament @relation(fields: [tournamentId], references: [id])
   tournamentId Int
 
-  // Relacionamento: Uma categoria tem vários atletas
-  athletes     Athlete[]
+  @@id([refereeId, tournamentId]) // Chave primária composta
 }
 
-// Modelo para os Atletas (eles não têm login, são apenas registros)
-model Athlete {
-  id         Int      @id @default(autoincrement())
-  name       String
+// Modelo MESTRE para TODAS as categorias possíveis
+model Category {
+  id    Int    @id @default(autoincrement())
+  name  String @unique // "Faixa Preta - Master 1 - Masculino"
   
-  // Relacionamento: Um atleta pertence a uma categoria
-  category   Category @relation(fields: [categoryId], references: [id])
-  categoryId Int
-
-  // Relacionamento: Um atleta pode receber várias notas
-  scores     Score[]
+  // Relacionamento N-M com Torneio
+  tournaments CategoryInTournament[]
+  // Uma categoria pode ter vários atletas (de diferentes torneios)
+  athletes    Athlete[]
 }
 
-// Modelo para a Nota de um árbitro para um atleta
+// Tabela de Junção (Join Table) para a relação N-M
+// Diz quais categorias estão em qual torneio
+model CategoryInTournament {
+  category     Category   @relation(fields: [categoryId], references: [id])
+  categoryId   Int
+  tournament   Tournament @relation(fields: [tournamentId], references: [id])
+  tournamentId Int
+
+  @@id([categoryId, tournamentId]) // Chave primária composta
+}
+
+model Athlete {
+  id   Int    @id @default(autoincrement())
+  name String
+
+  // O Atleta agora pertence diretamente a um Torneio e a uma Categoria Mestre
+  tournament   Tournament @relation(fields: [tournamentId], references: [id])
+  tournamentId Int
+  category     Category   @relation(fields: [categoryId], references: [id])
+  categoryId   Int
+
+  scores Score[]
+}
+
+// O modelo Score permanece praticamente o mesmo
 model Score {
   id           Int     @id @default(autoincrement())
-  precision    Float   // Nota de precisão (0-4)
-  presentation Float   // Nota de apresentação (0-6)
+  precision    Float
+  presentation Float
   
-  // Relacionamento: A nota é para um atleta específico
   athlete      Athlete @relation(fields: [athleteId], references: [id])
   athleteId    Int
   
-  // Relacionamento: A nota foi dada por um árbitro (User com role REFEREE) específico
   referee      User    @relation("RefereeToScore", fields: [refereeId], references: [id])
   refereeId    Int
 }

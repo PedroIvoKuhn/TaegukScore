@@ -57,16 +57,31 @@ exports.getTournamentById = async (req, res) => {
           select: { username: true },
         },
         categories: {
-          orderBy: { name: 'asc' }, 
+          orderBy: { 
+            category: { name: 'asc' }
+           }, 
           include: {
-            athletes: {
-              orderBy: { name: 'asc' },
+            category: true
+          },
+        },
+        athletes: {
+          orderBy: { name: 'asc' },
+          include: {
+            category: true
+          }
+        },
+        referees: {
+          include: {
+            referee: {
+              select: {
+                id: true,
+                username: true,
+              },
             },
           },
         },
       },
     });
-
     res.json(tournament);
   } catch (error) {
     if (error.code === 'P2025') {
@@ -74,5 +89,31 @@ exports.getTournamentById = async (req, res) => {
     }
     console.error(error);
     res.status(500).json({ error: 'Não foi possível buscar os detalhes do torneio.' });
+  }
+};
+
+exports.addRefereesToTournament = async (req, res) => {
+  const { id } = req.params;
+  const { refereIds } = req.body;
+
+  if (!refereIds || !Array.isArray(refereIds)){
+    return res.status(400).json({ error: 'A lista de árbitros é obrigatória.' });
+  }
+
+  try {
+    const dataToInsert = refereIds.map(refereeId => ({
+      tournamentId: parseInt(id),
+      refereeId: refereeId
+    }));
+
+    await prisma.refereesInTournament.createMany({
+      data: dataToInsert,
+      skipDuplicates: true
+    });
+
+    res.status(200).json({ message: 'Árbitros associados ao torneio com sucesso.' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Não foi possível associar os árbitros.' });
   }
 };

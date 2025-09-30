@@ -1,0 +1,147 @@
+=================*WTA LIVRE*=================================================
+
+*Preta*
+Par livre
+Equipe livre (M e F)
+
+*G3*
+Par livre
+Equipe livre (M e F)
+
+*G2*
+Par livre
+Equipe livre (M e F)
+
+*G1*
+Par livre
+Equipe livre
+
+==================*Categoria WTA (colorida e preta)*==========================
+
+FAIXA PRETA 
+
+*Individual*
+Subcadete (M e F)
+Juvenil (M e F)
+S30 (M e F)
+S40 (M e F)
+M45 (M e F)
+
+*Par*
+Subcadete 
+Juvenil
+S30
+S40
+M45
+
+*Equipe*
+Subcadete (M e F)
+Juvenil (M e F)
+S30 (M e F)
+S40 (M e F)
+M45 (M e F)
+
+
+FAIXA COLORIDA G3 
+
+*Individual*
+Subcadete (M e F)
+Juvenil (M e F)
+S30 (M e F)
+S40 (M e F)
+M45 (M e F)
+
+*Par*
+Subcadete 
+Juvenil
+S30
+S40
+M45
+
+*Equipe*
+Subcadete (M e F)
+Juvenil (M e F)
+S30 (M e F)
+S40 (M e F)
+M45 (M e F)
+
+FAIXA COLORIDA G2 
+
+*Individual*
+Subcadete (M e F)
+Juvenil (M e F)
+S30 (M e F)
+S40 (M e F)
+M45 (M e F)
+
+*Par*
+Subcadete 
+Juvenil
+S30
+S40
+M45
+
+*Equipe*
+Subcadete (M e F)
+Juvenil (M e F)
+S30 (M e F)
+S40 (M e F)
+M45 (M e F)
+
+FAIXA COLORIDA G1 
+
+*Individual*
+Subcadete (M e F)
+Juvenil (M e F)
+S30 (M e F)
+S40 (M e F)
+M45 (M e F)
+
+*Par*
+Subcadete 
+Juvenil
+S30
+S40
+M45
+
+*Equipe*
+Subcadete (M e F)
+Juvenil (M e F)
+S30 (M e F)
+S40 (M e F)
+M45 (M e F)
+
+=============*Categoria WT (todos faixa pretas)*============================================
+
+*Individual*
+Infantil (M e F)
+Cadete (M e F)
+Juvenil (M e F)
+S30 (M e F)
+S40 (M e F)
+S50 (M e F)
+S60 (M e F)
+S65 (M e F)
+M65 (M e F)
+
+*Par*
+Infantil 
+Cadete
+Juvenil
+S30
+S40
+S50
+S60
+S65
+M65
+
+*Equipe*
+Infantil (M e F)
+Cadete (M e F)
+Juvenil (M e F)
+S30 (M e F)
+S40 (M e F)
+S50 (M e F)
+S60 (M e F)
+S65 (M e F)
+M65 (M e F)

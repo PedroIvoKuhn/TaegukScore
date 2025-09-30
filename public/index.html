@@ -75,7 +75,7 @@
         </div>
         <div class="form-actions">
           <button type="submit">Criar Árbitro</button>
-          <p id="login-error"></p>
+          <p class="referee-error"></p>
         </div>
       </form>
     </div>
@@ -103,6 +103,11 @@
       <div style="margin-bottom: 1rem;">
         <label for="tournament-description">Descrição:</label>
         <textarea id="tournament-description" name="description" rows="3"></textarea>
+      </div>
+      <div style="margin-bottom: 1rem;">
+        <label for="tournament-referees">Selecionar Árbitros:</label>
+        <select name="referees" id="tournament-referees" multiple style="height: 100px; width: 100%;">
+        </select>
       </div>
       <div style="margin-bottom: 1rem;">
         <label for="tournament-athletes-pdf">Lista de Atletas (PDF):</label>

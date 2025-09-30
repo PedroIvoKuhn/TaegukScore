@@ -6,5 +6,6 @@ const { protect, isAdmin } = require('../middlewares/authMiddleware');
 router.get('/', tournamentController.getAllTournaments);
 router.post('/', protect, isAdmin, tournamentController.createTournament);
 router.get('/:id', tournamentController.getTournamentById);
+router.post('/:id/referees', protect, isAdmin, tournamentController.addRefereesToTournament);
 
 module.exports = router;
