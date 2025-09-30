@@ -167,7 +167,13 @@ document.addEventListener('DOMContentLoaded', () => {
     location: form.location.value,
     description: form.description.value
   };
-  const selectedRefereesId = [...tournamentRefereesSelect.selectedOptions].map(option => parseInt(option.value));
+  const selectedRefereesIds = [...tournamentRefereesSelect.selectedOptions].map(option => parseInt(option.value));
+
+  if (selectedRefereesIds.length < 3) {
+    errorP.textContent = 'É necessário selecionar no mínimo 3 árbitros para o torneio.';
+    return;
+  }
+
   const pdfFile = form.pdfFile.files[0];
 
   try {
@@ -187,8 +193,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const newTournament = await createResponse.json();
 
-    if (selectedRefereesId.length > 0){
-      await fetch(`/api/tournaments/${newTournament.id}/referees`, {
+    if (selectedRefereesIds.length > 0){
+      const refereesResponse = await fetch(`/api/tournaments/${newTournament.id}/referees`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -196,6 +202,11 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         body: JSON.stringify({ refereeIds: selectedRefereesIds })
       });
+
+      if (!refereesResponse.ok) {
+        const errData = await refereesResponse.json();
+        throw new Error(`Torneio criado, mas falha ao adicionar árbitros: ${errData.error}`);
+      }
     }
 
     if (pdfFile) {

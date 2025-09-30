@@ -22,7 +22,7 @@ exports.getAllTournaments = async (req, res) => {
 };
 
 exports.createTournament = async (req, res) => {
-  const { name, date } = req.body;
+  const { name, date, location, description } = req.body;
   const organizerId = req.user.id;
 
   if (!name || !date) {
@@ -35,6 +35,8 @@ exports.createTournament = async (req, res) => {
         name,
         date: new Date(date),
         organizerId,
+        location,
+        description,
       },
     });
     res.status(201).json(newTournament);
@@ -94,14 +96,18 @@ exports.getTournamentById = async (req, res) => {
 
 exports.addRefereesToTournament = async (req, res) => {
   const { id } = req.params;
-  const { refereIds } = req.body;
+  const { refereeIds } = req.body;
 
-  if (!refereIds || !Array.isArray(refereIds)){
+  if (!refereeIds || !Array.isArray(refereeIds)){
     return res.status(400).json({ error: 'A lista de árbitros é obrigatória.' });
   }
 
+  if (refereeIds.length < 3) {
+    return res.status(400).json({ error: 'Um torneio deve ter no mínimo 3 árbitros.' });
+  }
+
   try {
-    const dataToInsert = refereIds.map(refereeId => ({
+    const dataToInsert = refereeIds.map(refereeId => ({
       tournamentId: parseInt(id),
       refereeId: refereeId
     }));

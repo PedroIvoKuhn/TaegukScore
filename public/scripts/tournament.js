@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const tournamentNameEl = document.getElementById('tournament-name');
   const tournamentLocationEl = document.getElementById('tournament-location');
   const tournamentDescriptionEl = document.getElementById('tournament-description');
+  const tournamentRefereesEl = document.getElementById('tournament-referees');
   const categoriesContainer = document.getElementById('categories-container');
   const actionButtonsContainer = document.getElementById('action-buttons');
   
@@ -91,11 +92,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function renderTournament(tournament) {
     if (!categoriesContainer || !tournamentNameEl) return;
-
+    console.log(tournament);
     document.title = tournament.name;
     tournamentNameEl.textContent = tournament.name;
-    tournamentLocationEl.textContent = tournament.localizacao || 'Não informado';
-    tournamentDescriptionEl.textContent = tournament.descricao || 'Sem descrição.';
+    tournamentLocationEl.textContent = tournament.location || 'Não informado';
+    tournamentDescriptionEl.textContent = tournament.description || 'Sem descrição.';
+    tournamentRefereesEl.textContent = tournament.referees || 'Sem árbitros.';
     categoriesContainer.innerHTML = '<h2>Categorias e Atletas</h2>';
 
     if (tournament.categories.length === 0) {
