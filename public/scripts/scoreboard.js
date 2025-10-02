@@ -1,120 +1,115 @@
-window.onload = () => {
-    const score = document.getElementById('score');
-    const accuracyAvg = document.getElementById('accuracyAvg');
-    const gradeAvg = document.getElementById('gradeAvg');
-    const div = document.getElementById('referees');
+// public/scripts/scoreboard.js
+document.addEventListener('DOMContentLoaded', () => {
+  // Visões
+  const liveScoreView = document.getElementById('live-score-view');
+  const leaderboardView = document.getElementById('leaderboard-view');
+  const videoView = document.getElementById('video-view');
+  const videoPlayer = document.getElementById('looping-video');
 
-    setInterval(() => {show(score, accuracyAvg, gradeAvg, div)}, 1000);
-}
+  // ==================== AS CONSTANTES QUE FALTAVAM ESTÃO AQUI ====================
+  // Elementos da Visão Ao Vivo
+  const currentAthleteNameEl = document.getElementById('current-athlete-name');
+  const currentCategoryNameEl = document.getElementById('current-category-name');
+  const finalScoreEl = document.getElementById('score');
+  const presentationAvgEl = document.getElementById('presentationAvg');
+  const accuracyAvgEl = document.getElementById('accuracyAvg');
+  const individualScoresContainer = document.getElementById('individual-scores-container');
+  
+  // Elementos do Leaderboard
+  const leaderboardTitle = document.getElementById('leaderboard-title');
+  const leaderboardList = document.getElementById('leaderboard-list');
+  // ============================================================================
 
-function averageArray(stringArray) {
-    const numArray = stringArray.map(str => parseFloat(str, 10));
-    const validNumbers = numArray.filter(num => !isNaN(num));
-    const sumArray = validNumbers.reduce((i, currentValue) => i + currentValue);
-    const avg = sumArray / validNumbers.length;
-    return avg.toFixed(2);
-}
+  const urlParams = new URLSearchParams(window.location.search);
+  const tournamentId = urlParams.get('tournamentId');
+  const socket = io();
 
-function sum(number1, number2) {
-    return ((parseFloat(number1) + parseFloat(number2))).toFixed(2);
-}
+  if (!tournamentId) {
+    if (currentAthleteNameEl) currentAthleteNameEl.textContent = 'ERRO: ID do torneio não encontrado.';
+    return;
+  }
+  socket.emit('join:tournament-room', tournamentId);
 
-let calculated = false;
-let isNotShowing = false;
-function show(score, accuracyAvg, gradeAvg, div) {
-    if (Boolean(localStorage.getItem('show'))) {
-        if (!calculated) {
-            const numArbitros = parseInt(localStorage.getItem('arbitros'));
-            const gradesPrecision = localStorage.getItem("gradesPrecision").split(',');
-            const accuraciesApresentation = localStorage.getItem("accuraciesApresentation").split(',');
-            const precisionMaxAndMin = numArbitros !== 3 ? localStorage.getItem('precisionMaxAndMin').split(',') : null
-            const apresentationMaxAndMin = numArbitros !== 3 ? localStorage.getItem('apresentationMaxAndMin').split(',') : null
+  // Função para limpar e voltar para a visão principal
+  function clearScoreboard() {
+    liveScoreView.style.display = 'block'; // Mostra a visão principal
+    leaderboardView.style.display = 'none';
+    videoView.style.display = 'none'; // Esconde o vídeo
+    if (videoPlayer) videoPlayer.pause(); // Pausa o vídeo para economizar recursos
+    
+    // Agora essas variáveis existem e a função não vai mais quebrar
+    finalScoreEl.textContent = '-';
+    presentationAvgEl.textContent = '-';
+    accuracyAvgEl.textContent = '-';
+    currentAthleteNameEl.textContent = 'Aguardando atleta...';
+    currentCategoryNameEl.textContent = '';
+    individualScoresContainer.innerHTML = '';
+  }
 
-            const cleanPrecision = gradesPrecision.filter((grade, index) =>  {
-                if(precisionMaxAndMin){
-                    if (index === parseInt(precisionMaxAndMin[0])) return;
-                    if (index === parseInt(precisionMaxAndMin[1])) return;
-                }
-                return grade;
-            });
-        
-            const cleanApresentation = accuraciesApresentation.filter((grade, index) => {
-                if(apresentationMaxAndMin){
-                    if (index === parseInt(apresentationMaxAndMin[0])) return;
-                    if (index === parseInt(apresentationMaxAndMin[1])) return;
-                }
-                return grade;
-            })
-            
-            const avgPrecision = averageArray(cleanPrecision);
-            const avgApresentation = averageArray(cleanApresentation);
-        
-            let ul = document.createElement('ul');
-            ul.id = "tempReferees";
-            ul.className = "tempReferees"
-                const competitor = document.createElement('il');
-                competitor.textContent = localStorage.getItem("competitor");
-                competitor.className = 'competitor grid-item';
-            ul.appendChild(competitor);
+  // --- LISTENERS DE EVENTOS DO SOCKET ---
 
-            for (let index = 0; index < parseInt(localStorage.getItem('arbitros')); index++) {
-                const gradePrecision = gradesPrecision[index];
-                const accuracyApresentation = accuraciesApresentation[index];
-                let newReferee = document.createElement('il');
-                    newReferee.className = 'referee';
-                    let name = document.createElement('p');
-                    name.className = 'name grid-item';
-                    name.textContent = `${index+1}`;
-                newReferee.appendChild(name);
-                    let newAccApresentation = document.createElement('p');
-                    newAccApresentation.className = 'accuracy grid-item';
-                    newAccApresentation.textContent = `${accuracyApresentation}`;
-                    if(apresentationMaxAndMin){
-                        if (index === parseInt(apresentationMaxAndMin[0]) || index === parseInt(apresentationMaxAndMin[1])){
-                            newAccApresentation.className = 'cancel grid-item';
-                            newAccApresentation.style.textDecoration = 'line-through';
-                        }
-                    }
-                newReferee.appendChild(newAccApresentation);
-                    let newGradePrecision = document.createElement('p');
-                    newGradePrecision.className = 'grade grid-item';
-                    newGradePrecision.textContent = `${gradePrecision}`;
-                    if(precisionMaxAndMin){
-                        if (index === parseInt(precisionMaxAndMin[0]) || index === parseInt(precisionMaxAndMin[1])){
-                            newGradePrecision.className = 'cancel grid-item';
-                            newGradePrecision.style.textDecoration = 'line-through';
-                        }
-                    }
-
-                newReferee.appendChild(newGradePrecision);
-
-                ul.appendChild(newReferee);
-            }
-            div.appendChild(ul);
-
-            score.innerHTML = `${sum(avgApresentation, avgPrecision)}`;
-            accuracyAvg.innerHTML = `${avgApresentation}`;
-            gradeAvg.innerHTML = `${avgPrecision}`;
-
-            localStorage.setItem('result', `${avgApresentation},${avgPrecision},${sum(avgApresentation, avgPrecision)}`);
-            
-            calculated = true;
-            isNotShowing = false;
-            console.log("foi");
-        }
-    } else {
-        calculated = false;
-        const div = document.getElementById("tempReferees");
-        if (div) {
-          div.remove();  
-        }
-        if (!isNotShowing) {
-            score.innerHTML = "-";
-            accuracyAvg.innerHTML = `-`;
-            gradeAvg.innerHTML = `-`;
-            localStorage.removeItem('result');
-            isNotShowing = true;
-            console.log('agora não');
-        }
+  // Mostra a visão de vídeo
+  socket.on('scoreboard:display-video', () => {
+    liveScoreView.style.display = 'none';
+    leaderboardView.style.display = 'none';
+    videoView.style.display = 'flex';
+    if (videoPlayer) {
+      videoPlayer.currentTime = 0;
+      videoPlayer.play();
     }
-};
+  });
+
+  // Mostra o leaderboard
+  socket.on('scoreboard:display-leaderboard', (data) => {
+    liveScoreView.style.display = 'none';
+    videoView.style.display = 'none';
+    leaderboardView.style.display = 'block';
+    
+    leaderboardTitle.textContent = `Resultado Final - ${data.categoryName}`;
+    leaderboardList.innerHTML = '';
+
+    if (data.results.length === 0) {
+      leaderboardList.innerHTML = '<li>Nenhum resultado finalizado para esta categoria.</li>';
+      return;
+    }
+
+    data.results.forEach(result => {
+      const li = document.createElement('li');
+      li.innerHTML = `
+        ${result.athlete.name} - <strong>${result.finalScore.toFixed(2)}</strong> 
+        <small>(Precisão: ${result.precisionAvg.toFixed(2)} | Soma Bruta: ${result.rawScoreSum.toFixed(2)})</small>
+      `;
+      leaderboardList.appendChild(li);
+    });
+  });
+
+  // Mostra a nota de um atleta
+  socket.on('scoreboard:update-athlete', (data) => {
+    clearScoreboard(); // Reseta para a visão principal
+    currentAthleteNameEl.textContent = data.athleteName;
+    currentCategoryNameEl.textContent = data.categoryName;
+  });
+  
+  // Atualiza a nota na visão principal
+  socket.on('scoreboard:update-score', (data) => {
+    finalScoreEl.textContent = data.finalScore.toFixed(2);
+    presentationAvgEl.textContent = data.presentationAvg.toFixed(2);
+    accuracyAvgEl.textContent = data.precisionAvg.toFixed(2);
+    individualScoresContainer.innerHTML = '';
+    if (data.rawScores && Array.isArray(data.rawScores)) {
+      data.rawScores.forEach((score, index) => {
+        const scoreDiv = document.createElement('div');
+        scoreDiv.style.fontSize = '2rem';
+        scoreDiv.innerHTML = `<strong>Árbitro ${index + 1}:</strong> Precisão: ${score.precision.toFixed(1)} | Apresentação: ${score.presentation.toFixed(1)}`;
+        individualScoresContainer.appendChild(scoreDiv);
+      });
+    }
+  });
+  
+  // Limpa o placar (volta para a visão principal)
+  socket.on('scoreboard:clear', () => {
+    clearScoreboard();
+  });
+  
+  console.log(`Placar conectado à sala do torneio ${tournamentId}`);
+});

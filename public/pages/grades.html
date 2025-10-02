@@ -1,35 +1,44 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Placar</title>
-    <script src="../scripts/grade.js"></script>
-    <link rel="stylesheet" href="../css/grades.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@600&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel de Controle do Torneio</title>
+  <link rel="stylesheet" href="../css/grades.css">
+  <style>
+    body { display: flex; height: 100vh; }
+    .sidebar { width: 40%; overflow-y: auto; background: #f0f0f0; padding: 1rem; }
+    .main-content { width: 60%; padding: 1rem; }
+    .athlete-item { padding: 0.8rem; margin-bottom: 0.5rem; border: 1px solid #ccc; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; }
+    .athlete-item.completed { background-color: #d4edda; }
+    .present-btn { padding: 0.5rem; cursor: pointer; }
+    #current-athlete-info { background: #eee; padding: 1rem; margin-bottom: 1rem; border-radius: 5px; }
+  </style>
 </head>
 <body>
-    <section class="section">
-        <div class="competitor">
-            <div class="name">
-                <label for="competitor">Competidor</label>
-                <input type="text" name="competitor" id="competitor">
-            </div>
-            <p class="result" id="result"> Resultado:
-            </p>
-        </div>
-        <fieldset class="grades">
-            <form id="form" class="form">
-                
-            </form>
-        </fieldset>
-        <div class="actions">
-            <a href="../pages/scoreboard.html" target="_blank" class="button">Placar</a>
-            <div>
-                <button id="reset" type="button" onclick="resetInputs()">Reset</button>
-                <button id="submit" type="submit" form="form">Enviar</button>
-            </div>
-        </div>
-    </section>
+  <aside class="sidebar">
+    <h1>Atletas do Torneio</h1>
+    <div id="categories-container">Carregando...</div>
+  </aside>
+
+  <main class="main-content">
+    <h1>Painel de Notas</h1>
+    <a id="open-scoreboard-link" href="../pages/scoreboard.html" target="_blank" class="button">Abrir Placar</a>
+    <button id="clear-scoreboard-btn" class="button" style="background-color: #c82333;">Limpar Placar</button>
+    <button id="play-video-btn" class="button" style="background-color: #007bff;">Rodar Anúncio</button>
+    
+    <div id="current-athlete-info">
+      <h3>Atleta se apresentando: <span id="current-athlete-name">Nenhum</span></h3>
+      <p>Categoria: <span id="current-category-name">Nenhuma</span></p>
+    </div>
+
+    <form id="scores-form">
+      </form>
+    <button type="submit" form="scores-form">Salvar Notas</button>
+    <p id="form-error" style="color:red;"></p>
+  </main>
+  
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <script src="../scripts/grades-admin.js"></script>
 </body>
 </html>

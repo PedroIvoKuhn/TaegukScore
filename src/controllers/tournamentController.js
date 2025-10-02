@@ -69,7 +69,12 @@ exports.getTournamentById = async (req, res) => {
         athletes: {
           orderBy: { name: 'asc' },
           include: {
-            category: true
+            category: true,
+            results: {
+              where: {
+                tournamentId: parseInt(id), // Garante que pegamos o resultado apenas deste torneio
+              },
+            },
           }
         },
         referees: {
@@ -121,5 +126,28 @@ exports.addRefereesToTournament = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Não foi possível associar os árbitros.' });
+  }
+};
+
+exports.getCategoryResults = async (req, res) => {
+  const { tournamentId, categoryId } = req.params;
+  try {
+    const results = await prisma.athleteResult.findMany({
+      where: {
+        tournamentId: parseInt(tournamentId),
+        athlete: { categoryId: parseInt(categoryId) },
+      },
+      include: {
+        athlete: { select: { name: true } },
+      },
+      orderBy: [
+        { finalScore: 'desc' },      // 1º Critério: Média geral
+        { precisionAvg: 'desc' },    // 2º Critério (desempate): Média de precisão
+        { rawScoreSum: 'desc' },     // 3º Critério (desempate): Soma das notas brutas
+      ],
+    });
+    res.json(results);
+  } catch (error) {
+    res.status(500).json({ error: 'Não foi possível buscar os resultados da categoria.' });
   }
 };

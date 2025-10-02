@@ -42,6 +42,8 @@ model Tournament {
   
   // Relação N-M: Um torneio tem vários árbitros
   referees     RefereesInTournament[]
+
+  results      AthleteResult[]
 }
 
 // Tabela de Junção para a relação N-M (Árbitros em Torneios)
@@ -87,6 +89,23 @@ model Athlete {
   categoryId   Int
 
   scores Score[]
+  results    AthleteResult[]
+}
+
+model AthleteResult {
+  id             Int      @id @default(autoincrement())
+  finalScore     Float    // A nota final calculada
+  precisionAvg   Float
+  presentationAvg Float
+  rawScoreSum     Float   @default(0)
+
+  athlete      Athlete    @relation(fields: [athleteId], references: [id])
+  athleteId    Int
+  tournament   Tournament @relation(fields: [tournamentId], references: [id])
+  tournamentId Int
+
+  // Garante que um atleta só pode ter um resultado por torneio
+  @@unique([athleteId, tournamentId])
 }
 
 // O modelo Score permanece praticamente o mesmo
