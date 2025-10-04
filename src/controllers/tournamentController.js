@@ -141,13 +141,79 @@ exports.getCategoryResults = async (req, res) => {
         athlete: { select: { name: true } },
       },
       orderBy: [
-        { finalScore: 'desc' },      // 1º Critério: Média geral
+        { finalScore:   'desc' },      // 1º Critério: Média geral
         { precisionAvg: 'desc' },    // 2º Critério (desempate): Média de precisão
-        { rawScoreSum: 'desc' },     // 3º Critério (desempate): Soma das notas brutas
+        { rawScoreSum:  'desc' },     // 3º Critério (desempate): Soma das notas brutas
       ],
     });
     res.json(results);
   } catch (error) {
     res.status(500).json({ error: 'Não foi possível buscar os resultados da categoria.' });
+  }
+};
+
+exports.getTournamentReport = async (req, res) => {
+  const { id } = req. params;
+  try {
+    const tournament = await prisma.tournament.findUnique({
+      where: { id: parseInt(id) },
+      include: {
+        referees: {
+          include: {
+            referee: { select: { username: true } },
+          },
+        },
+      },
+    });
+
+    if (!tournament) return res.status(404).json({ error: "Torneio não encontrado." });
+
+    const allResults = await prisma.athleteResult.findMany({
+      where: { tournamentId: parseInt(id) },
+      orderBy: [
+        { finalScore:   'desc' },
+        { precisionAvg: 'desc' },
+        { rawScoreSum:  'desc' },
+      ],
+      include: {
+        athlete: {
+          include: {
+            category: true, // Inclui o objeto Categoria inteiro
+          },
+        },
+      },
+    });
+
+    const leaderboards = allResults.reduce((acc, result) => {
+      if (!result.athlete || !result.athlete.category) {
+        console.warn(`Resultado com ID ${result.id} ignorado por não ter atleta ou categoria associada.`);
+        return acc; // Retorna o acumulador sem modificação
+      }
+      
+      const categoryName = result.athlete.category.name;
+
+      if (!acc[categoryName]) acc[categoryName] = [];
+
+      acc[categoryName].push({
+        name:         result.athlete.name,
+        finalScore:   result.finalScore,
+        precisionAvg: result.precisionAvg,
+        rawScoreSum:  result.rawScoreSum,
+      });
+      return acc;
+    }, {});
+
+    const reportData = {
+      tournamentName: tournament.name,
+      referees: tournament.referees.map(r => r.referee.username),
+      leaderboards: Object.keys(leaderboards).map(categoryName => ({
+        categoryName,
+        results: leaderboards[categoryName],
+      })),
+    };
+    res.json(reportData);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Não foi possível gerar os dados do relatório."});
   }
 };

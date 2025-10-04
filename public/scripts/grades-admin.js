@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const clearScoreboardBtn = document.getElementById('clear-scoreboard-btn');
   const errorP = document.getElementById('form-error');
   const playVideoBtn = document.getElementById('play-video-btn');
+  const downloadReportBtn = document.getElementById('download-report-btn');
 
   const urlParams = new URLSearchParams(window.location.search);
   const tournamentId = urlParams.get('tournamentId');
@@ -240,6 +241,77 @@ async function initializePanel() {
   }
 }
 
+async function handleDownloadReport(){
+  const { jsPDF } = window.jspdf;
+
+  downloadReportBtn.textContent = 'Gerando...';
+  downloadReportBtn.disabled = true;
+
+  try {
+    const response = await fetch(`/api/tournaments/${tournamentId}/report`, {
+      headers: { 'Authorization': `Bearer ${token}`}
+    });
+    if (!response.ok) throw new Error('Falha ao buscar dados do relatório.');
+
+    const reportData = await response.json();
+    const doc = new jsPDF();
+    let y = 15;
+
+    doc.setFontSize(22);
+    doc.text(reportData.tournamentName, 10, y);
+    y += 15;
+
+    doc.setFontSize(14);
+    doc.text('Equipe de Árbitros:', 10, y);
+    y += 7;
+    doc.setFontSize(10);
+    reportData.referees.forEach(referee => {
+      doc.text(`- ${referee}`, 15, y);
+      y += 5;
+    });
+    y += 10;
+
+    // Itera sobre os leaderboards de cada categoria
+    reportData.leaderboards.forEach(leaderboard => {
+      if (y > 270) {
+        doc.addPage();
+        y = 15;
+      }
+      
+      doc.setFontSize(16);
+      doc.text(leaderboard.categoryName, 10, y);
+      y += 10;
+      doc.setFontSize(12);
+
+      if (leaderboard.results.length === 0) {
+        doc.text('Nenhum resultado finalizado.', 15, y);
+        y += 7;
+      } else {
+        leaderboard.results.forEach((result, index) => {
+          // A LINHA QUE DESENHA O RESULTADO AGORA ESTÁ MAIS COMPLETA
+          const resultText = 
+            `${index + 1}º - ${result.name}: ` +
+            `Média Final: ${result.finalScore.toFixed(2)} | ` +
+            `Média Precisão: ${result.precisionAvg.toFixed(2)} | ` +
+            `Soma Bruta: ${result.rawScoreSum.toFixed(2)}`;
+          
+          doc.text(resultText, 15, y);
+          y += 7;
+        });
+      }
+      y += 10;
+    });
+
+    doc.save(`relatorio_${reportData.tournamentName.replace(/\s+/g, '_')}.pdf`);
+ 
+  } catch (error) {
+    alert(error.message);
+  } finally {
+    downloadReportBtn.textContent = "Baixar Relatório";
+    downloadReportBtn.disabled = false;
+  }
+}
+
   // --- EVENT LISTENERS ---
   categoriesContainer.addEventListener('click', handleSelectAthlete);
   scoresForm.addEventListener('submit', handleSubmitScores);
@@ -256,6 +328,9 @@ async function initializePanel() {
       // Emite um evento para o servidor, que retransmitirá para o placar
       socket.emit('admin:play-video', { tournamentId });
     });
+  }
+  if (downloadReportBtn) {
+    downloadReportBtn.addEventListener('click', handleDownloadReport);
   }
 
   initializePanel();
