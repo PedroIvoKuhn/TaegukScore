@@ -98,6 +98,7 @@ model AthleteResult {
   precisionAvg   Float
   presentationAvg Float
   rawScoreSum     Float   @default(0)
+  presentationNumber Int      @default(1)
 
   athlete      Athlete    @relation(fields: [athleteId], references: [id])
   athleteId    Int
@@ -105,7 +106,7 @@ model AthleteResult {
   tournamentId Int
 
   // Garante que um atleta só pode ter um resultado por torneio
-  @@unique([athleteId, tournamentId])
+  @@unique([athleteId, tournamentId, presentationNumber])
 }
 
 // O modelo Score permanece praticamente o mesmo

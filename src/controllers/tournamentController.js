@@ -1,5 +1,8 @@
 const prisma = require('../services/prisma');
-
+const DUAL_PRESENTATION_CATEGORIES = [
+  'Faixa Azul',
+  'Teste'
+];
 exports.getAllTournaments = async (req, res) => {
   try {
     const tournaments = await prisma.tournament.findMany({
@@ -132,29 +135,65 @@ exports.addRefereesToTournament = async (req, res) => {
 exports.getCategoryResults = async (req, res) => {
   const { tournamentId, categoryId } = req.params;
   try {
-    const results = await prisma.athleteResult.findMany({
-      where: {
-        tournamentId: parseInt(tournamentId),
-        athlete: { categoryId: parseInt(categoryId) },
-      },
-      include: {
-        athlete: { select: { name: true } },
-      },
-      orderBy: [
-        { finalScore:   'desc' },      // 1º Critério: Média geral
-        { precisionAvg: 'desc' },    // 2º Critério (desempate): Média de precisão
-        { rawScoreSum:  'desc' },     // 3º Critério (desempate): Soma das notas brutas
-      ],
-    });
-    res.json(results);
+    const category = await prisma.category.findUnique({ where: { id: parseInt(categoryId) } });
+    if (!category) return res.status(404).json({ error: 'Categoria não encontrada.'});
+
+    let finalResults;
+
+    if (DUAL_PRESENTATION_CATEGORIES.includes(category.name)) {
+      const aggregatedResults = await prisma.athleteResult.groupBy({
+        by: ['athleteId'],
+        where: {
+          tournamentId: parseInt(tournamentId),
+          athlete: { categoryId: parseInt(categoryId) },
+        },
+        _avg: {
+          finalScore: true,
+          precisionAvg: true,
+          rawScoreSum: true,
+        },
+      });
+
+      const athleteIds = aggregatedResults.map(r => r.athleteId);
+      const athletes = await prisma.athlete.findMany({
+        where: { id: { in: athleteIds } },
+        select: { id: true, name: true },
+      });
+
+      finalResults = aggregatedResults.map(result => {
+        const athleteInfo = athletes.find(a => a.id === result.athleteId);
+        return {
+          athlete: { name: athleteInfo.name },
+          finalScore: result._avg.finalScore,
+          precisionAvg: result._avg.precisionAvg,
+          rawScoreSum: result._avg.rawScoreSum,
+        };
+      }).sort((a, b) => b.finalScore - a.finalScore);
+    } else {
+      finalResults = await prisma.athleteResult.findMany({
+        where: {
+          tournamentId: parseInt(tournamentId),
+          athlete: { categoryId: parseInt(categoryId) },
+        },
+        include: { athlete: { select: { name: true } } },
+        orderBy: [
+          { finalScore: 'desc' },
+          { precisionAvg: 'desc' },
+          { rawScoreSum: 'desc' },
+        ],
+      });
+    }
+
+    res.json(finalResults);
   } catch (error) {
     res.status(500).json({ error: 'Não foi possível buscar os resultados da categoria.' });
   }
 };
 
 exports.getTournamentReport = async (req, res) => {
-  const { id } = req. params;
+  const { id } = req.params;
   try {
+    // Busca detalhes do torneio e árbitros
     const tournament = await prisma.tournament.findUnique({
       where: { id: parseInt(id) },
       include: {
@@ -166,54 +205,112 @@ exports.getTournamentReport = async (req, res) => {
       },
     });
 
-    if (!tournament) return res.status(404).json({ error: "Torneio não encontrado." });
+    if (!tournament) {
+      return res.status(404).json({ error: 'Torneio não encontrado.' });
+    }
 
+    // Busca todos os resultados do torneio de uma vez
     const allResults = await prisma.athleteResult.findMany({
       where: { tournamentId: parseInt(id) },
-      orderBy: [
-        { finalScore:   'desc' },
-        { precisionAvg: 'desc' },
-        { rawScoreSum:  'desc' },
-      ],
       include: {
-        athlete: {
-          include: {
-            category: true, // Inclui o objeto Categoria inteiro
-          },
-        },
+        athlete: { include: { category: true } },
       },
     });
 
-    const leaderboards = allResults.reduce((acc, result) => {
+    // Agrupa os resultados por categoria no JavaScript
+    const resultsByCategory = allResults.reduce((acc, result) => {
       if (!result.athlete || !result.athlete.category) {
-        console.warn(`Resultado com ID ${result.id} ignorado por não ter atleta ou categoria associada.`);
-        return acc; // Retorna o acumulador sem modificação
+        return acc;
       }
-      
       const categoryName = result.athlete.category.name;
-
-      if (!acc[categoryName]) acc[categoryName] = [];
-
-      acc[categoryName].push({
-        name:         result.athlete.name,
-        finalScore:   result.finalScore,
-        precisionAvg: result.precisionAvg,
-        rawScoreSum:  result.rawScoreSum,
-      });
+      if (!acc[categoryName]) {
+        acc[categoryName] = [];
+      }
+      acc[categoryName].push(result);
       return acc;
     }, {});
+    
+    const finalLeaderboards = [];
+
+    // Processa cada categoria para calcular o placar final
+    for (const categoryName in resultsByCategory) {
+      let sortedResults;
+      const categoryResults = resultsByCategory[categoryName];
+
+      // SE for uma categoria de duas apresentações...
+      if (DUAL_PRESENTATION_CATEGORIES.includes(categoryName)) {
+        // Agrupa os resultados por atleta para calcular a média
+        const athletesGrouped = categoryResults.reduce((acc, result) => {
+          if (!acc[result.athleteId]) {
+            acc[result.athleteId] = { name: result.athlete.name, scores: [] };
+          }
+          acc[result.athleteId].scores.push(result);
+          return acc;
+        }, {});
+        
+        // Calcula a média e formata os dados
+        const averagedResults = Object.values(athletesGrouped).map(athleteData => {
+          const scoreCount = athleteData.scores.length > 0 ? athleteData.scores.length : 1;
+          const avgFinalScore = athleteData.scores.reduce((sum, s) => sum + s.finalScore, 0) / scoreCount;
+          const avgPrecision = athleteData.scores.reduce((sum, s) => sum + s.precisionAvg, 0) / scoreCount;
+          const avgPresentation = athleteData.scores.reduce((sum, s) => sum + s.presentationAvg, 0) / scoreCount;
+          const totalRawSum = athleteData.scores.reduce((sum, s) => sum + s.rawScoreSum, 0);
+          
+          return {
+            name: athleteData.name,
+            finalScore: avgFinalScore,
+            precisionAvg: avgPrecision,
+            presentationAvg: avgPresentation,
+            rawScoreSum: totalRawSum,
+            presentations: athleteData.scores.map(s => ({ 
+              presentationNumber: s.presentationNumber,
+              score: s.finalScore,
+              precisionAvg: s.precisionAvg,
+              presentationAvg: s.presentationAvg
+            })),
+          };
+        });
+
+        // Ordena com base nos resultados médios
+        sortedResults = averagedResults.sort((a, b) => {
+            if (b.finalScore !== a.finalScore) return b.finalScore - a.finalScore;
+            if (b.precisionAvg !== a.precisionAvg) return b.precisionAvg - a.precisionAvg;
+            return b.rawScoreSum - a.rawScoreSum;
+        });
+
+      } else {
+        // SENÃO (categoria normal), apenas ordena os resultados existentes
+        sortedResults = categoryResults.sort((a, b) => {
+            if (b.finalScore !== a.finalScore) return b.finalScore - a.finalScore;
+            if (b.precisionAvg !== a.precisionAvg) return b.precisionAvg - a.precisionAvg;
+            return b.rawScoreSum - a.rawScoreSum;
+        }).map(r => ({ 
+          name: r.athlete.name,
+          finalScore: r.finalScore,
+          precisionAvg: r.precisionAvg,
+          presentationAvg: r.presentationAvg,
+          rawScoreSum: r.rawScoreSum,
+          presentations: [{ 
+            presentationNumber: 1, 
+            score: r.finalScore,
+            precisionAvg: r.precisionAvg,   
+            presentationAvg: r.presentationAvg 
+          }]
+        }));
+      }
+      
+      finalLeaderboards.push({ categoryName, results: sortedResults });
+    }
 
     const reportData = {
       tournamentName: tournament.name,
       referees: tournament.referees.map(r => r.referee.username),
-      leaderboards: Object.keys(leaderboards).map(categoryName => ({
-        categoryName,
-        results: leaderboards[categoryName],
-      })),
+      leaderboards: finalLeaderboards,
     };
+
     res.json(reportData);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Não foi possível gerar os dados do relatório."});
+    res.status(500).json({ error: 'Não foi possível gerar os dados do relatório.' });
   }
 };

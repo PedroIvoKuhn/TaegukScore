@@ -3,11 +3,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   const scoresForm = document.getElementById('scores-form');
   const currentAthleteNameEl = document.getElementById('current-athlete-name');
   const currentCategoryNameEl = document.getElementById('current-category-name');
-  const clearScoreboardBtn = document.getElementById('clear-scoreboard-btn');
   const errorP = document.getElementById('form-error');
+  const openScoreboardLink = document.getElementById('open-scoreboard-link');
+  const clearScoreboardBtn = document.getElementById('clear-scoreboard-btn');
   const playVideoBtn = document.getElementById('play-video-btn');
   const downloadReportBtn = document.getElementById('download-report-btn');
+  const leaderboardModal = document.getElementById('leaderboard-modal');
+  const leaderboardTitle = document.getElementById('leaderboard-title');
+  const leaderboardContent = document.getElementById('leaderboard-content');
 
+  // --- Estado e Configuração ---
   const urlParams = new URLSearchParams(window.location.search);
   const tournamentId = urlParams.get('tournamentId');
   const token = localStorage.getItem('token');
@@ -17,41 +22,38 @@ document.addEventListener('DOMContentLoaded', async () => {
   let currentAthlete = null;
   let currentCategory = null;
 
+  const DUAL_PRESENTATION_CATEGORIES = [
+  'Faixa Azul',
+  'Teste'
+];
+
   if (!tournamentId) {
     categoriesContainer.innerHTML = '<h1>Erro: ID do torneio não encontrado na URL.</h1>';
     return;
   }
-  
-  // Conecta na sala do Socket.IO
+
   socket.emit('join:tournament-room', tournamentId);
 
   // --- FUNÇÕES ---
+  async function initializePanel() {
+    try {
+      const response = await fetch(`/api/tournaments/${tournamentId}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!response.ok) throw new Error('Não foi possível carregar os dados do torneio.');
+      
+      tournamentData = await response.json();
 
-  // Busca os dados do torneio e renderiza a lista de atletas
-async function initializePanel() {
-  try {
-    const response = await fetch(`/api/tournaments/${tournamentId}`, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    if (!response.ok) throw new Error('Não foi possível carregar os dados do torneio.');
-    
-    tournamentData = await response.json();
+      if (openScoreboardLink) {
+        openScoreboardLink.href = `../pages/scoreboard.html?tournamentId=${tournamentId}`;
+      }
 
-    // ===== AJUSTE DE SEGURANÇA AQUI =====
-    // Encontra o link do placar
-    const scoreboardLink = document.getElementById('open-scoreboard-link');
-    // Só tenta modificar o href SE o link for encontrado
-    if (scoreboardLink) {
-      scoreboardLink.href = `../pages/scoreboard.html?tournamentId=${tournamentId}`;
+      renderAthleteList();
+      generateScoreInputs();
+    } catch (error) {
+      categoriesContainer.innerHTML = `<h1>${error.message}</h1>`;
     }
-    // ===================================
-
-    renderAthleteList();
-    generateScoreInputs();
-  } catch (error) {
-    categoriesContainer.innerHTML = `<h1>${error.message}</h1>`;
   }
-}
   
   // Gera os inputs para as notas dos árbitros
   function generateScoreInputs() {
@@ -62,10 +64,10 @@ async function initializePanel() {
       scoresForm.innerHTML += `
         <h4>Árbitro: ${referee.username}</h4>
         <div>
-          <label for="precision-${i}">Precisão:</label>
-          <input type="number" step="0.1" id="precision-${i}" name="precision" required>
-          <label for="presentation-${i}">Apresentação:</label>
-          <input type="number" step="0.1" id="presentation-${i}" name="presentation" required>
+          <label for="precision-${i}">Precisão (0-4):</label>
+          <input type="number" step="0.01" min="0" max="4" id="precision-${i}" name="precision" required>
+          <label for="presentation-${i}">Apresentação (0-6):</label>
+          <input type="number" step="0.01" min="0" max="6" id="presentation-${i}" name="presentation" required>
         </div>
       `;
     }
@@ -77,41 +79,49 @@ async function initializePanel() {
     tournamentData.categories.forEach(catInTourn => {
       const category = catInTourn.category;
       const categoryDiv = document.createElement('div');
-      categoryDiv.innerHTML = `
-      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid #ccc; margin-bottom: 0.5rem;">
-        <h3>${category.name}</h3>
-        <button 
-          class="show-leaderboard-btn" 
-          data-category-id="${category.id}" 
-          data-category-name="${category.name}"
-          style="padding: 0.3rem 0.6rem; font-size: 0.8rem;"
-        >
-          Placar
-        </button>
-      </div>
-    `;
       
+      categoryDiv.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid #ccc; margin-bottom: 0.5rem;">
+          <h3>${category.name}</h3>
+          <button class="show-leaderboard-btn" data-category-id="${category.id}" data-category-name="${category.name}" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;">
+            Placar
+          </button>
+        </div>
+      `;
+
       const athletesInCategory = tournamentData.athletes.filter(a => a.categoryId === category.id);
       
       athletesInCategory.forEach(athlete => {
         const athleteDiv = document.createElement('div');
         athleteDiv.className = 'athlete-item';
         athleteDiv.id = `athlete-${athlete.id}`;
-        // ===== LÓGICA PARA MOSTRAR A NOTA =====
-        // A API agora nos envia o resultado do atleta
-        const result = athlete.results[0]; // Pegamos o primeiro (e único) resultado
-        const scoreDisplay = result ? `<strong style="color: green;">${result.finalScore.toFixed(2)}</strong>` : '';
+        
+        if (DUAL_PRESENTATION_CATEGORIES.includes(category.name)) {
+          const result1 = athlete.results.find(r => r.presentationNumber === 1);
+          const score1 = result1 ? `<strong style="color:green;">${result1.finalScore.toFixed(2)}</strong>` : '';
+          const completed1 = result1 ? 'completed' : '';
 
-        // Se já tiver um resultado, marca como 'completed'
-        if (result) {
-          athleteDiv.classList.add('completed');
+          const result2 = athlete.results.find(r => r.presentationNumber === 2);
+          const score2 = result2 ? `<strong style="color:green;">${result2.finalScore.toFixed(2)}</strong>` : '';
+          const completed2 = result2 ? 'completed' : '';
+
+          athleteDiv.innerHTML = `
+            <span>${athlete.name} (1: ${score1} | 2: ${score2})</span>
+            <div>
+              <button class="present-btn ${completed1}" data-athlete-id="${athlete.id}" data-category-id="${category.id}" data-presentation-number="1">Apres. 1</button>
+              <button class="present-btn ${completed2}" data-athlete-id="${athlete.id}" data-category-id="${category.id}" data-presentation-number="2">Apres. 2</button>
+            </div>
+          `;
+        } else {
+          const result = athlete.results[0];
+          const scoreDisplay = result ? `<strong style="color: green;">${result.finalScore.toFixed(2)}</strong>` : '';
+          if (result) athleteDiv.classList.add('completed');
+          
+          athleteDiv.innerHTML = `
+            <span>${athlete.name} ${scoreDisplay}</span>
+            <button class="present-btn" data-athlete-id="${athlete.id}" data-category-id="${category.id}" data-presentation-number="1">Apresentar</button>
+          `;
         }
-
-        athleteDiv.innerHTML = `
-          <span>${athlete.name} ${scoreDisplay}</span>
-          <button class="present-btn" data-athlete-id="${athlete.id}" data-category-id="${category.id}">Apresentar</button>
-        `;
-        // ========================================
         categoryDiv.appendChild(athleteDiv);
       });
       categoriesContainer.appendChild(categoryDiv);
@@ -122,17 +132,18 @@ async function initializePanel() {
   function handleSelectAthlete(event) {
     if (!event.target.classList.contains('present-btn')) return;
 
-    const athleteId = parseInt(event.target.dataset.athleteId);
-    const categoryId = parseInt(event.target.dataset.categoryId);
+    const button = event.target;
+    const athleteId = parseInt(button.dataset.athleteId);
+    const categoryId = parseInt(button.dataset.categoryId);
+    const presentationNumber = parseInt(button.dataset.presentationNumber); 
 
     currentAthlete = tournamentData.athletes.find(a => a.id === athleteId);
+    currentAthlete.presentationNumber = presentationNumber;
     currentCategory = tournamentData.categories.find(c => c.categoryId === categoryId).category;
     
-    // Atualiza a UI
-    currentAthleteNameEl.textContent = currentAthlete.name;
+    currentAthleteNameEl.textContent = `${currentAthlete.name} (${presentationNumber}ª Apres.)`;
     currentCategoryNameEl.textContent = currentCategory.name;
 
-    // Avisa a todos (placar, árbitros) via Socket.IO quem está se apresentando
     socket.emit('admin:select-athlete', {
       tournamentId: tournamentId,
       athleteId: currentAthlete.id,
@@ -144,6 +155,7 @@ async function initializePanel() {
     errorP.textContent = '';
   }
   
+  // Função para enviar as notas para a API
   async function handleSubmitScores(event) {
     event.preventDefault();
     if (!currentAthlete) {
@@ -156,24 +168,36 @@ async function initializePanel() {
     const presentationInputs = document.querySelectorAll('input[name="presentation"]');
     
     const scores = [];
+    let validationError = null;
+
     for (let i = 0; i < precisionInputs.length; i++) {
-      scores.push({
-        precision: parseFloat(precisionInputs[i].value),
-        presentation: parseFloat(presentationInputs[i].value)
-      });
+      const precision = parseFloat(precisionInputs[i].value);
+      const presentation = parseFloat(presentationInputs[i].value);
+      if (isNaN(precision) || precision < 0 || precision > 4) {
+        validationError = `Nota de precisão do Árbitro ${i + 1} é inválida.`;
+        break;
+      }
+      if (isNaN(presentation) || presentation < 0 || presentation > 6) {
+        validationError = `Nota de apresentação do Árbitro ${i + 1} é inválida.`;
+        break;
+      }
+      scores.push({ precision, presentation });
+    }
+
+    if (validationError) {
+      errorP.textContent = validationError;
+      return;
     }
 
     try {
       const response = await fetch('/api/scores', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({
           athleteId: currentAthlete.id,
           tournamentId: parseInt(tournamentId),
-          scores: scores
+          scores: scores,
+          presentationNumber: currentAthlete.presentationNumber
         })
       });
 
@@ -182,11 +206,9 @@ async function initializePanel() {
         throw new Error(err.error);
       }
 
-      const resultData = await response.json(); // A API nos retorna o resultado calculado
-
+      const resultData = await response.json();
       alert(`Notas para ${currentAthlete.name} salvas com sucesso!`);
       
-      // ===== EMITIR O EVENTO PARA O PLACAR =====
       socket.emit('scoreboard:update-score', {
         tournamentId: tournamentId,
         athleteName: currentAthlete.name,
@@ -195,12 +217,11 @@ async function initializePanel() {
         presentationAvg: resultData.presentationAvg,
         rawScores: scores
       });
-      // =========================================
 
       // Atualiza a UI sem precisar recarregar a página
-      const athleteDiv = document.getElementById(`athlete-${currentAthlete.id}`);
-      athleteDiv.classList.add('completed');
-      athleteDiv.querySelector('span').innerHTML = `${currentAthlete.name} <strong style="color: green;">${resultData.finalScore.toFixed(2)}</strong>`;
+      const athleteResult = tournamentData.athletes.find(a => a.id === currentAthlete.id).results;
+      athleteResult.push(resultData); // Adiciona o novo resultado
+      renderAthleteList(); // Re-renderiza a lista para mostrar a nova nota
 
       currentAthlete = null;
       currentAthleteNameEl.textContent = 'Nenhum';
@@ -211,56 +232,54 @@ async function initializePanel() {
       errorP.textContent = error.message;
     }
   }
-
   async function handleShowLeaderboard(event) {
-  if (!event.target.classList.contains('show-leaderboard-btn')) return;
-  
-  const categoryId = event.target.dataset.categoryId;
-  const categoryName = event.target.dataset.categoryName;
-  
-  try {
-    // 1. Busca os resultados ordenados da API
-    const response = await fetch(`/api/tournaments/${tournamentId}/category/${categoryId}/results`, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    if (!response.ok) throw new Error('Falha ao buscar placar da categoria.');
+    if (!event.target.classList.contains('show-leaderboard-btn')) return;
     
-    const results = await response.json();
+    const categoryId = event.target.dataset.categoryId;
+    const categoryName = event.target.dataset.categoryName;
     
-    // 2. Emite o evento para o telão com os dados
-    socket.emit('admin:show-leaderboard', {
-      tournamentId: tournamentId,
-      categoryName: categoryName,
-      results: results, // Envia a lista já ordenada
-    });
+    try {
+      const response = await fetch(`/api/tournaments/${tournamentId}/category/${categoryId}/results`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!response.ok) throw new Error('Falha ao buscar placar da categoria.');
+      
+      const results = await response.json();
+      
+      socket.emit('admin:show-leaderboard', {
+        tournamentId: tournamentId,
+        categoryName: categoryName,
+        results: results,
+      });
 
-    alert(`Comando para exibir o placar da categoria "${categoryName}" enviado para o telão.`);
-
-  } catch (error) {
-    alert(error.message);
+      alert(`Comando para exibir o placar da categoria "${categoryName}" enviado para o telão.`);
+    } catch (error) {
+      alert(error.message);
+    }
   }
-}
 
-async function handleDownloadReport(){
+async function handleDownloadReport() {
   const { jsPDF } = window.jspdf;
-
+  
   downloadReportBtn.textContent = 'Gerando...';
   downloadReportBtn.disabled = true;
 
   try {
     const response = await fetch(`/api/tournaments/${tournamentId}/report`, {
-      headers: { 'Authorization': `Bearer ${token}`}
+      headers: { 'Authorization': `Bearer ${token}` }
     });
     if (!response.ok) throw new Error('Falha ao buscar dados do relatório.');
-
+    
     const reportData = await response.json();
     const doc = new jsPDF();
-    let y = 15;
+    let y = 15; // Posição vertical inicial no PDF
 
+    // Título
     doc.setFontSize(22);
     doc.text(reportData.tournamentName, 10, y);
     y += 15;
 
+    // Árbitros
     doc.setFontSize(14);
     doc.text('Equipe de Árbitros:', 10, y);
     y += 7;
@@ -271,8 +290,9 @@ async function handleDownloadReport(){
     });
     y += 10;
 
-    // Itera sobre os leaderboards de cada categoria
+    // Leaderboards de cada categoria
     reportData.leaderboards.forEach(leaderboard => {
+      // Adiciona uma nova página se não houver espaço suficiente
       if (y > 270) {
         doc.addPage();
         y = 15;
@@ -288,26 +308,47 @@ async function handleDownloadReport(){
         y += 7;
       } else {
         leaderboard.results.forEach((result, index) => {
-          // A LINHA QUE DESENHA O RESULTADO AGORA ESTÁ MAIS COMPLETA
+          // Garante que não quebre a página no meio de um resultado de múltiplas apresentações
+          const resultBlockHeight = (result.presentations && result.presentations.length > 1) ? 14 : 7;
+          if (y + resultBlockHeight > 280) {
+            doc.addPage();
+            y = 15;
+          }
+
           const resultText = 
             `${index + 1}º - ${result.name}: ` +
-            `Média Final: ${result.finalScore.toFixed(2)} | ` +
-            `Média Precisão: ${result.precisionAvg.toFixed(2)} | ` +
-            `Soma Bruta: ${result.rawScoreSum.toFixed(2)}`;
-          
+            `Final: ${result.finalScore.toFixed(2)} | ` +
+            `Precisão: ${result.precisionAvg.toFixed(2)} | ` +
+            `Apresentação: ${result.presentationAvg.toFixed(2)}`;
           doc.text(resultText, 15, y);
           y += 7;
+
+          if (result.presentations && result.presentations.length > 1) {
+            result.presentations.sort((a,b) => a.presentationNumber - b.presentationNumber).forEach(presentation => {
+              const presentationText = 
+                `   - Apres. ${presentation.presentationNumber}: ` +
+                `Nota: ${presentation.score.toFixed(2)} | ` +
+                `Precisão: ${presentation.precisionAvg.toFixed(2)} | ` +
+                `Apres.: ${presentation.presentationAvg.toFixed(2)}`;
+              
+              doc.setFontSize(10);
+              doc.text(presentationText, 15, y);
+              y += 5;
+              doc.setFontSize(12); // Volta a fonte ao normal
+            });
+            y += 2; 
+          }
         });
       }
       y += 10;
     });
 
     doc.save(`relatorio_${reportData.tournamentName.replace(/\s+/g, '_')}.pdf`);
- 
+
   } catch (error) {
     alert(error.message);
   } finally {
-    downloadReportBtn.textContent = "Baixar Relatório";
+    downloadReportBtn.textContent = 'Baixar Relatório';
     downloadReportBtn.disabled = false;
   }
 }
@@ -325,7 +366,6 @@ async function handleDownloadReport(){
   }
   if (playVideoBtn) {
     playVideoBtn.addEventListener('click', () => {
-      // Emite um evento para o servidor, que retransmitirá para o placar
       socket.emit('admin:play-video', { tournamentId });
     });
   }

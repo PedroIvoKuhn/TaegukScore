@@ -30,6 +30,14 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   socket.emit('join:tournament-room', tournamentId);
 
+  if (videoPlayer) {
+    videoPlayer.addEventListener('ended', () => {
+      videoPlayer.currentTime = 0; // Reinicia o tempo do vídeo para o início
+      videoPlayer.play(); // Manda tocar de novo
+      console.log('Vídeo terminou, reiniciando o loop via JS.');
+    });
+  }
+
   // Função para limpar e voltar para a visão principal
   function clearScoreboard() {
     liveScoreView.style.display = 'block'; // Mostra a visão principal
@@ -77,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const li = document.createElement('li');
       li.innerHTML = `
         ${result.athlete.name} - <strong>${result.finalScore.toFixed(2)}</strong> 
-        <small>(Precisão: ${result.precisionAvg.toFixed(2)} | Soma Bruta: ${result.rawScoreSum.toFixed(2)})</small>
+        <small>(Apresentação: ${result.precisionAvg.toFixed(2)} | Soma Bruta: ${result.rawScoreSum.toFixed(2)})</small>
       `;
       leaderboardList.appendChild(li);
     });
@@ -110,6 +118,6 @@ document.addEventListener('DOMContentLoaded', () => {
   socket.on('scoreboard:clear', () => {
     clearScoreboard();
   });
-  
+  clearScoreboard();
   console.log(`Placar conectado à sala do torneio ${tournamentId}`);
 });
