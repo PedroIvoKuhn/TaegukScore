@@ -1,132 +1,207 @@
+:root{
+    --roxo:rgb(86, 74, 222);
+    --vermelho: rgb(233, 21, 45);
+    --azul: rgb(30, 110, 244);
+    --verde:rgb(0, 137, 50);
+}
+
 * {
-    margin: 0;
-    padding: 0;
     box-sizing: border-box;
 }
 
-html {
-    font-size: 62.5%;
-    scroll-behavior: smooth;
-    background-color: #59656F;
-}
-
-h1 {
-    font-size: 30rem;
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background-color: #484848; 
+    overflow: hidden;
     color: white;
 }
 
-h3 {
-    font-size: 10rem;
-}
-
-body {
-    font-family: Arial, sans-serif;
-}
-
-.section {
+#live-score-view {
     height: 100vh;
+    width: 100vw;
+}
+
+.top-bar {
+    margin: 10px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 15vh;
+    background-color: var(--roxo);
+}
+
+.top-bar h3, .top-bar p {
+    margin: 0;  
+}
+
+#current-athlete-name {
+    font-size: 2.5em;
+    font-weight: bold;
+    margin: 0;
+}
+
+#current-category-name {
+    font-size: 2em; 
+    margin: 0;
+    margin-top: 5px;
 }
 
 .main-content {
-    display: grid; 
-    grid-template-columns: 1fr 1fr 1fr;
-    grid-template-rows: 80vh 15vh;
-    margin: 2vh auto;
-    max-width: 95vw;
-    height: 98vh;
-    justify-content: center;
+    height: 80vh;
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    padding: 10px 5vw;
+    gap: 20px; 
     align-items: center;
 }
 
-.grid-item {
-    border: 1px solid black;
-    border-radius: 20px;
-    padding: 10px;
+.grades {
+    margin: 2px 0;
     display: flex;
-    text-align: center;
     justify-content: center;
-    align-items: center; 
+}
+
+.precision {
+    background-color: var(--azul);
+    padding: 20px;
+    margin: 2px;
+    border: 1px solid white;
+    font-size: 1.5em;
+}
+
+.presentation {
+    background-color: var(--vermelho);
+    padding: 20px;
+    margin: 2px;
+    border: 1px solid white;
+    font-size: 1.5em;
+}
+
+.index {
+    background-color: lightgray;
+    color: black;
+    padding: 20px;
+    margin: 2px;
+    border: 1px solid white;
+    font-size: 1.5em;
+}
+
+.main-scores {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 8fr 2fr;
+    gap: 1px;
+    grid-template-areas: 
+            "score score"
+            "presentation precision";
+
+    place-items: center;
+    height: 70vh;
+    padding: 1px;
+    background-color: white;
+}
+
+#score {
+    grid-area: score;
+    background-color: var(--verde);
     width: 100%;
     height: 100%;
-    overflow: hidden;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 8em;
 }
 
-.referees {
-    grid-row: span 2;
-    font-size: 6rem;
-}
-
-.tempReferees {
-    width: 98%;
+#presentationAvg{
+    grid-area: presentation;
+    background-color: var(--vermelho);
+    width: 100%;
     height: 100%;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 4em;
 }
 
-.referee {
-    display: grid;
-    grid-template-columns: 1fr 1.5fr 1.5fr;
-    gap: 1rem;
-    margin-top: 1rem;
+#precisionAvg{
+    grid-area: precision;
+    background-color: var(--azul);
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 4em;
 }
 
-.referee .name{
-    font-size: 4rem;
-    background-color: lightgray;
-    border-top-right-radius: 0;
-    border-bottom-right-radius: 0;
-}
-
-.referee .grade{
-    background-color: blue;
+.top-leaderboard {
+    text-align: center;
+    font-size: 3em;
     color: white;
-    border-bottom-left-radius: 0;
-    border-top-left-radius: 0;
+    background-color: var(--roxo); /* Roxo escuro */
+    padding: 20px;
+    margin: 0;
+    margin-bottom: 100px;
 }
 
-.referee .accuracy{
-    background-color: red;
-    border-radius: 0;
+/* --- Estilo Geral da Lista --- */
+#leaderboardList {
+    list-style-type: none; /* Remove os pontos da lista */
+    padding: 20px;
+    margin: 0;
+    font-size: 2em;
+    gap: 8px;
 }
 
-.referee .cancel{
-    background-color: gray;
-    border-radius: 0;
+/* --- Estilo de Cada Item da Lista --- */
+.leaderboard-item {
+    display: grid; 
+    grid-template-columns: auto 6fr 1fr 1fr 1fr;
+    gap: 8px;
+    align-items: stretch; 
+    min-height: 60px;
+    background-color: transparent;
+    margin-bottom: 15px;
 }
 
-.score {
-    grid-column: span 2;
-    background-color: green;
-}
-
-.accuracyAvg {
-    background-color: red;
-}
-
-.gradeAvg {
-    background-color: blue;
+.athlete-name, .finalScore, .podium-presentation, .rawSum {
+    display: flex; 
+    align-items: center;
+    justify-content: center;
+    padding: 10px 15px;
     color: white;
+    border-radius: 6px;
 }
 
-.competitor {
-    font-size: 4rem;
-    background-color: lightgray;
-    margin-bottom: 3rem;
+.athlete-name {
+    justify-content: flex-start; 
+    background-color: var(--roxo);
+    font-weight: bold;
+    font-size: 2.2em;
 }
 
-#score{
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
+.finalScore, .podium-presentation, .rawSum {
+    font-size: 2.2em;
+    font-weight: bold;
 }
 
-#accuracyAvg,
-#gradeAvg {
-    border-top-left-radius: 0;
-    border-top-right-radius: 0;
-}
+.finalScore { background-color: var(--verde); }
+.podium-presentation { background-color: var(--vermelho); }
+.rawSum { background-color: gray; }
 
-#gradeAvg {
-    border-bottom-left-radius: 0;
-}
-
-#accuracyAvg{
-    border-bottom-right-radius: 0;
+/* Medalha não precisa de fundo */
+.medal {
+    display: flex;
+    align-items: center;
+    justify-content: center; /* Garante que o emoji fique centrado */
+    font-size: 2.5em;
+    width: 90px;
 }

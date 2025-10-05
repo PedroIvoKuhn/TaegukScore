@@ -308,7 +308,6 @@ async function handleDownloadReport() {
         y += 7;
       } else {
         leaderboard.results.forEach((result, index) => {
-          // Garante que não quebre a página no meio de um resultado de múltiplas apresentações
           const resultBlockHeight = (result.presentations && result.presentations.length > 1) ? 14 : 7;
           if (y + resultBlockHeight > 280) {
             doc.addPage();

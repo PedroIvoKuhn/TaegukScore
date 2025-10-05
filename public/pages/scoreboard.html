@@ -7,28 +7,27 @@
   <link rel="stylesheet" href="../css/scoreboard.css">
 </head>
 <body>
-
-  <div id="live-score-view">
-    <section class="section">
-      <div class="main-content">
-        <div class="referees">
-            <h2>Apresentação:</h2>
-            <h3 id="current-athlete-name">Aguardando atleta...</h3>
-            <p id="current-category-name"></p>
-            <hr>
-            <h3>Notas Individuais:</h3>
-            <div id="individual-scores-container"></div>
+  <section id="live-score-view">
+        <div class="top-bar">
+          <h3 id="current-athlete-name">Aguardando atleta...</h3>
+          <p id="current-category-name"></p>
         </div>
-        <h1 id="score" class="score grid-item">-</h1>
-        <h3 id="presentationAvg" class="gradeAvg grid-item">-</h3>
-        <h3 id="accuracyAvg" class="accuracyAvg grid-item">-</h3>
+        <div class="main-content">
+          <div class="referess-container">
+            <div id="individual-scores-container"></div>
+          </div>
+          <div class="main-scores">
+            <h1 id="score" class="score grid-item">-</h1>
+            <h3 id="presentationAvg" class="presentationAvg grid-item">-</h3>
+            <h3 id="precisionAvg" class="precisionAvg grid-item">-</h3>
+          </div>
+        </div>
       </div>
-    </section>
-  </div>
+  </section>
 
   <div id="leaderboard-view" style="display: none; padding: 2rem;">
     <h1 id="leaderboard-title"></h1>
-    <ol id="leaderboard-list" style="font-size: 3rem; list-style-position: inside;"></ol>
+    <ol id="leaderboard-list" style="list-style-position: inside;"></ol>
   </div>
 
   <div id="video-view" style="display: none; width: 100vw; height: 100vh; background-color: black; display: flex; justify-content: center; align-items: center;">
