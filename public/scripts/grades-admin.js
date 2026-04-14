@@ -23,8 +23,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   let currentCategory = null;
 
   const DUAL_PRESENTATION_CATEGORIES = [
-  'Faixa Azul',
-  'Teste'
+  'WT - Individual Infantil Masculino',
+  'WT - Individual Cadete Feminino',
+  'WT - Individual Junior Feminino',
+  'WT - Individual Junior Masculino',
+  'WT - Individual S30 Masculino',
+  'WT - Individual S40 Masculino',
+  'WT - Individual S50 Masculino',
+  'WT - Par Junior',
+  'WT - Par S30',
 ];
 
   if (!tournamentId) {

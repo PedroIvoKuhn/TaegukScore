@@ -1,123 +1,177 @@
+/**
+ * Regras do prisma:
+ * - Campos normais (Int, String) = Colunas reais no banco de dados
+ * - Campos de modelo (User, Tournament) = "Portais", links virtuais para o prisma navegar entre tabelas
+ * (não criam colunas físicas, exeto chave estrangeira)
+ */
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client-js" // Diz para gerar o código JavaScript/TypeScript que você vai usar (`prisma.user.findMany`...)
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "postgresql" // Define que o banco é Postgres.
+  url      = env("DATABASE_URL") // Pega a senha/endereço do banco de um arquivo .env
 }
 
-// Papéis de usuário que podem existir no sistema
+// Papéis de usuário
 enum Role {
-  ADMIN
-  REFEREE
+  ADMIN // Organizador
+  REFEREE // Árbitro
 }
 
 // Modelo para usuários (tanto Admin quanto Árbitros)
 model User {
-  id                 Int      @id @default(autoincrement())
-  username           String   @unique
-  password           String
-  role               Role     @default(REFEREE)
-  
+  // --- Colunas Reais no Banco ---
+  id       Int    @id @default(autoincrement()) // A identidade única (1, 2, 3...). O banco gera sozinho (+1).
+  username String @unique // @unique: O banco proíbe dois usuários com mesmo nome.
+  password String // Senha (idealmente criptografada).
+  role     Role   @default(REFEREE) // Se não informar nada, ele nasce como Árbitro.
+
+  // --- Campos Virtuais (Relações) - O Prisma usa isso, o SQL "ignora" ---
+  // 1. "Meus Torneios Organizados"
   createdTournaments Tournament[] @relation("OrganizerToTournament")
-  submittedScores    Score[]      @relation("RefereeToScore")
-  
-  // Relação N-M: Um árbitro pode estar em vários torneios
-  tournaments        RefereesInTournament[]
+  // POR QUE: Permite fazer `user.createdTournaments` no front-end para ver o que ele criou.
+  // A tag "OrganizerToTournament" é um apelido para o Prisma não confundir com outras relações.
+
+  // 2. "Minhas Notas Dadas"
+  submittedScores Score[] @relation("RefereeToScore")
+  // POR QUE: Permite auditoria. "Quais notas esse usuário deu?".
+
+  // 3. "Torneios onde atuei como Árbitro"
+  tournaments RefereesInTournament[]
+  // POR QUE: Aqui é a relação N-M. O usuário não guarda o torneio direto, ele guarda um link para a tabela de junção.
 }
 
 model Tournament {
-  id           Int      @id @default(autoincrement())
-  name         String
-  date         DateTime
-  location  String?
-  description    String?
-  
-  organizer    User     @relation("OrganizerToTournament", fields: [organizerId], references: [id])
-  organizerId  Int
-  
-  categories   CategoryInTournament[]
-  athletes     Athlete[]
-  
-  // Relação N-M: Um torneio tem vários árbitros
-  referees     RefereesInTournament[]
+  // --- Dados do Evento ---
+  id          Int      @id @default(autoincrement())
+  name        String
+  date        DateTime
+  location    String? // O "?" significa opcional (pode ser nulo no banco).
+  description String?
 
-  results      AthleteResult[]
+  // --- O Dono do Torneio (Relação 1-N) ---
+  organizer User @relation("OrganizerToTournament", fields: [organizerId], references: [id])
+  // O QUE: É o objeto completo do usuário. O Prisma preenche isso magicamente quando você pede.
+  // A parte `fields: [organizerId]` diz: "Use a coluna abaixo para achar esse usuário".
+
+  organizerId Int
+  // O QUE: Coluna real no banco (Foreign Key). Guarda apenas o número (ex: 5). 
+  // POR QUE: Bancos SQL só guardam números/textos, não guardam objetos inteiros.
+
+  // --- Listas de coisas dentro do torneio ---
+  categories CategoryInTournament[] // Quais categorias vão rolar.
+  athletes   Athlete[] // Quem vai lutar
+
+  // --- Quem vai trabalhar (Árbitros) ---
+  referees RefereesInTournament[]
+  // POR QUE: De novo, a tabela de junção. Um torneio tem muitos árbitros, e um árbitro tem muitos torneios.
+
+  results AthleteResult[] // Resultados finais calculados.
 }
 
 // Tabela de Junção para a relação N-M (Árbitros em Torneios)
 model RefereesInTournament {
-  referee      User       @relation(fields: [refereeId], references: [id])
-  refereeId    Int
+  // --- Lado do Árbitro ---
+  referee   User @relation(fields: [refereeId], references: [id]) // O Objeto (virtual)
+  refereeId Int // O Crachá do árbitro (dado real no banco, ex: Usuário 5)
+
+  // --- Lado do Torneio ---
   tournament   Tournament @relation(fields: [tournamentId], references: [id])
-  tournamentId Int
+  tournamentId Int // O código do torneio
 
   @@id([refereeId, tournamentId]) // Chave primária composta
 }
 
 // Modelo MESTRE para TODAS as categorias possíveis
 model Category {
-  id    Int    @id @default(autoincrement())
-  name  String @unique // "Faixa Preta - Master 1 - Masculino"
-  
-  // Relacionamento N-M com Torneio
-  tournaments CategoryInTournament[]
-  // Uma categoria pode ter vários atletas (de diferentes torneios)
-  athletes    Athlete[]
+  id Int @id @default(autoincrement())
+
+  name String @unique
+  // O QUE: Define o nome (ex: "Faixa Preta - Leve").
+  // POR QUE: @unique impede duplicatas. Você não quer ter duas categorias com o nome idêntico no sistema.
+  // Essa tabela existe independente dos torneios. É a lista "pura" de categorias que o esporte possui.
+
+  // --- Relações Virtuais ---
+  tournaments CategoryInTournament[] // Em quais torneios essa categoria foi usada?
+  athletes    Athlete[] // Lista de todos os atletas que já competiram nessa categoria.
 }
 
-// Tabela de Junção (Join Table) para a relação N-M
 // Diz quais categorias estão em qual torneio
 model CategoryInTournament {
-  category     Category   @relation(fields: [categoryId], references: [id])
-  categoryId   Int
+  // --- Lado da Categoria ---
+  category   Category @relation(fields: [categoryId], references: [id])
+  categoryId Int
+
+  // --- Lado do Torneio ---
   tournament   Tournament @relation(fields: [tournamentId], references: [id])
   tournamentId Int
+  // POR QUE: Chave composta. Impede que você adicione a categoria "Faixa Preta" 
+  // duas vezes dentro do mesmo "Torneio de Verão".
 
-  @@id([categoryId, tournamentId]) // Chave primária composta
+  @@id([categoryId, tournamentId])
 }
 
 model Athlete {
   id   Int    @id @default(autoincrement())
-  name String
+  name String // Nome do competidor.
 
-  // O Atleta agora pertence diretamente a um Torneio e a uma Categoria Mestre
+  // --- Onde ele está competindo? ---
   tournament   Tournament @relation(fields: [tournamentId], references: [id])
   tournamentId Int
-  category     Category   @relation(fields: [categoryId], references: [id])
-  categoryId   Int
+  // POR QUE: Um atleta, neste modelo, pertence a UM torneio específico. 
+  // Se o "João" competir em dois torneios, você criará duas linhas na tabela Athlete (João no Torneio A, João no Torneio B).
 
-  scores Score[]
-  results    AthleteResult[]
+  // --- Em qual categoria? ---
+  category   Category @relation(fields: [categoryId], references: [id])
+  categoryId Int
+  // Liga o atleta ao "Menu Global" de categorias.
+
+  // --- Histórico ---
+  scores  Score[]
+  results AthleteResult[]
 }
 
 model AthleteResult {
-  id             Int      @id @default(autoincrement())
-  finalScore     Float    // A nota final calculada
-  precisionAvg   Float
-  presentationAvg Float
-  rawScoreSum     Float   @default(0)
-  presentationNumber Int      @default(1)
+  id Int @id @default(autoincrement())
 
-  athlete      Athlete    @relation(fields: [athleteId], references: [id])
-  athleteId    Int
+  // --- As Notas Calculadas ---
+  finalScore      Float // A nota final
+  precisionAvg    Float // Média de precisão
+  presentationAvg Float // Média de apresentação
+  rawScoreSum     Float @default(0) // Soma bruta
+
+  presentationNumber Int @default(1)
+  // O QUE: Serve para esportes como Poomsae ou Kata onde o atleta se apresenta mais de uma vez.
+  // 1 = Primeira apresentação, 2 = Final, etc.
+
+  // --- De quem é esse boletim? ---
+  athlete   Athlete @relation(fields: [athleteId], references: [id])
+  athleteId Int
+
+  // --- Redundância ---
   tournament   Tournament @relation(fields: [tournamentId], references: [id])
   tournamentId Int
+  // POR QUE: Embora o "athlete" já tenha o torneio, colocar o ID do torneio aqui 
+  // facilita muito consultas como: "Me dê todos os resultados do Torneio X" sem ter que passar pela tabela Athlete.
 
-  // Garante que um atleta só pode ter um resultado por torneio
-  @@unique([athleteId, tournamentId, presentationNumber])
+  @@unique([athleteId, tournamentId, presentationNumber]) // Garante que um atleta só pode ter um resultado por torneio
 }
 
 // O modelo Score permanece praticamente o mesmo
 model Score {
-  id           Int     @id @default(autoincrement())
+  id           Int   @id @default(autoincrement())
+  // --- Valores ---
   precision    Float
   presentation Float
-  
-  athlete      Athlete @relation(fields: [athleteId], references: [id])
-  athleteId    Int
-  
-  referee      User    @relation("RefereeToScore", fields: [refereeId], references: [id])
-  refereeId    Int
+
+  // --- Quem recebeu? ---
+  athlete   Athlete @relation(fields: [athleteId], references: [id])
+  athleteId Int
+
+  // --- Quem deu a nota? ---
+  referee   User @relation("RefereeToScore", fields: [refereeId], references: [id])
+  refereeId Int
+  // POR QUE: Aqui fica gravado eternamente que o Árbitro X (User) deu essa nota específica.
+  // O nome "RefereeToScore" é só para o Prisma saber qual relação usar lá no model User.
 }
