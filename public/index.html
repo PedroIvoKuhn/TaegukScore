@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TaegukScore - Torneios</title>
+  <link rel="stylesheet" href="/css/index.css"> <style>
+  </style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <a href="/" class="brand">
+      <img src="/videos/Taeguk score.png" alt="TaegukScore Logo">
+      TaegukScore
+    </a>
+    <div class="nav-auth">
+      <div id="nav-logged-out">
+        <button id="login-btn">Login do Árbitro</button>
+      </div>
+      <div id="nav-logged-in" style="display: none;">
+        <span id="username-display"></span>
+        <button id="logout-btn">Logout</button>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <section id="admin-controls">
+      <h2>Painel do Administrador</h2>
+      <div class="admin-actions">
+        <button id="create-tournament-btn">Criar Novo Torneio</button>
+        <button id="create-referee-btn">Criar Novo Árbitro</button>
+      </div>
+    </section>
+    <section class="tournament-list">
+      <h1>Próximos Torneios</h1>
+      <div id="tournaments-container">
+        </div>
+    </section>
+  </main>
+
+  <div id="login-modal" class="modal">
+    <div class="modal-content">
+        <div>
+          <span class="close-button">&times;</span>
+          <h2>Login do Árbitro</h2>
+        </div>
+        <form id="login-form">
+        <div class="form-group">
+          <label for="username">Usuário:</label>
+          <input type="text" id="username" name="username" required>
+        </div>
+        <div class="form-group">
+          <label for="password">Senha:</label>
+          <input type="password" id="password" name="password" required>
+        </div>
+        <div class="form-actions">
+          <button type="submit">Entrar</button>
+          <p id="login-error"></p>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="create-referee-modal" class="modal">
+    <div class="modal-content">
+      <div>
+        <span class="close-button">&times;</span>
+        <h2>Criar Novo Árbitro</h2>
+      </div>
+      <form id="create-referee-form">
+        <div class="form-group">
+          <label for="referee-username">Usuário:</label>
+          <input type="text" id="referee-username" name="username" required>
+        </div>
+        <div class="form-group">
+          <label for="referee-password">Senha:</label>
+          <input type="password" id="referee-password" name="password" required>
+        </div>
+        <div class="form-actions">
+          <button type="submit">Criar Árbitro</button>
+          <p class="referee-error"></p>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="create-tournament-modal" class="modal">
+    <div class="modal-content">
+      <div>
+        <span class="close-button">&times;</span>
+        <h2>Criar Novo Torneio</h2>
+      </div>
+      <form id="create-tournament-form">
+        <div class="form-group">
+          <label for="tournament-name">Nome do Torneio:</label>
+          <input type="text" id="tournament-name" name="name" required>
+        </div>
+        <div class="form-group">
+          <label for="tournament-date">Data:</label>
+          <input type="date" id="tournament-date" name="date" required>
+        </div>
+        <div class="form-group">
+          <label for="tournament-location">Localização:</label>
+          <input type="text" id="tournament-location" name="location">
+        </div>
+        <div class="form-group">
+          <label for="tournament-description">Descrição:</label>
+          <textarea id="tournament-description" name="description" rows="3"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="tournament-referees">Selecionar Árbitros:</label>
+          <select name="referees" id="tournament-referees" multiple style="height: 100px; width: 100%;">
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="tournament-athletes-pdf">Lista de Atletas (PDF):</label>
+          <input type="file" id="tournament-athletes-pdf" name="pdfFile" accept=".pdf">
+        </div>
+        <div class="form-actions">
+          <button type="submit">Criar Torneio</button>
+          <p class="form-error"></p>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/scripts/main.js"></script>
+</body>
+</html>

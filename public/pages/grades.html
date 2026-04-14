@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel de Controle do Torneio</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <link rel="stylesheet" href="../css/grades.css">
+</head>
+<body>
+  <aside class="sidebar">
+    <h1>Atletas do Torneio</h1>
+    <div id="categories-container">Carregando...</div>
+  </aside>
+
+  <main class="main-content">
+    <h1>Painel de Notas</h1>
+    <div class="header-actions">
+      <a id="open-scoreboard-link" href="../pages/scoreboard.html" target="_blank" class="button">Abrir Placar</a>
+      <button id="clear-scoreboard-btn" class="button" style="background-color: var(--vermelho);">Limpar Placar</button>
+      <button id="play-video-btn" class="button" style="background-color: var(--azul);">Rodar Anúncio</button>
+      <button id="download-report-btn" class="button" style="background-color: var(--verde);">Baixar Relatório</button>
+    </div>
+    
+    <div id="current-athlete-info">
+      <h3>Atleta se apresentando: <span id="current-athlete-name">Nenhum</span></h3>
+      <p>Categoria: <span id="current-category-name">Nenhuma</span></p>
+    </div>
+
+    <form id="scores-form">
+      </form>
+    <button type="submit" form="scores-form">Salvar Notas</button>
+    <p id="form-error" style="color:red;"></p>
+  </main>
+  
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <script src="../scripts/grades-admin.js"></script>
+</body>
+</html>

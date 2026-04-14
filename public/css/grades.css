@@ -1,0 +1,232 @@
+:root {
+    --roxo: rgb(86, 74, 222);
+    --vermelho: rgb(233, 21, 45);
+    --azul: rgb(30, 110, 244);
+    --verde: rgb(0, 137, 50);
+    --bg-color: #484848;
+    --sidebar-bg: #2B2B2B;
+    --card-bg: #3A3A3A;
+    --text-primary: #FFFFFF;
+    --text-secondary: #CCCCCC;
+    --border-color: #555555;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 62.5%;
+    scroll-behavior: smooth;
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+}
+
+body {
+    font-family: 'Segoe UI', Inter, Arial, sans-serif;
+    display: flex; 
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* Sidebar for Athletes */
+.sidebar {
+    width: 30%;
+    min-width: 300px;
+    height: 100vh;
+    background-color: var(--sidebar-bg);
+    padding: 2rem;
+    overflow-y: auto;
+    border-right: 1px solid var(--border-color);
+}
+
+.sidebar h1 {
+    font-size: 2.8rem;
+    color: var(--roxo);
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+/* Main Content Area */
+.main-content {
+    flex: 1;
+    padding: 3rem;
+    overflow-y: auto;
+    background-color: var(--bg-color);
+}
+
+.main-content h1 {
+    font-size: 3.6rem;
+    margin-bottom: 2rem;
+}
+
+/* Athlete Items in Sidebar */
+.athlete-item {
+    padding: 1.2rem;
+    margin-bottom: 1rem;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 1.6rem;
+    transition: transform 0.2s, background-color 0.2s;
+}
+
+.athlete-item:hover {
+    transform: translateX(4px);
+    background-color: #444;
+}
+
+.athlete-item.completed {
+    border-left: 5px solid var(--verde);
+}
+
+.present-btn {
+    padding: 0.6rem 1.2rem;
+    background-color: var(--roxo);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1.4rem;
+    font-weight: 600;
+}
+
+.present-btn:hover {
+    background-color: #6a5eff;
+}
+
+/* Info Banner */
+#current-athlete-info {
+    background-color: var(--card-bg);
+    padding: 2rem;
+    margin-bottom: 3rem;
+    border-radius: 10px;
+    border-left: 5px solid var(--roxo);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+}
+
+#current-athlete-info h3 {
+    font-size: 2.2rem;
+    margin-bottom: 0.5rem;
+}
+
+#current-athlete-info p {
+    font-size: 1.8rem;
+    color: var(--text-secondary);
+}
+
+#current-athlete-name {
+    color: var(--roxo);
+    font-weight: bold;
+}
+
+/* Buttons */
+button, .button {
+    background-color: var(--roxo);
+    border-radius: 6px;
+    border: none;
+    color: white;
+    font-size: 1.8rem;
+    font-weight: 600;
+    padding: 12px 24px;
+    transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+    margin-bottom: 1rem;
+}
+
+button:hover, .button:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.1);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+button:disabled {
+    background-color: var(--border-color);
+    color: #999;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Form Styles */
+fieldset {
+    border: none;
+}
+
+/* Score Grids */
+.competitor {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+.grade {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    background-color: var(--card-bg);
+    padding: 2rem;
+    border-radius: 12px;
+}
+
+/* Input Specifics */
+input[type="number"], 
+input[type="text"] {
+    background-color: #1a1a1a;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: white;
+    font-size: 2rem;
+    padding: 1rem;
+    height: auto;
+    width: 100%;
+    outline: none;
+}
+
+input[type="number"]:focus,
+input[type="text"]:focus {
+    border-color: var(--roxo);
+    box-shadow: 0 0 0 2px rgba(86, 74, 222, 0.3);
+}
+
+/* Inputs from old structure */
+.grades {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 10px;
+    width: 100%;
+}
+
+.grades label {
+    display: block;
+    font-size: 1.6rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-secondary);
+}
+
+/* Actions at the bottom */
+#scores-form {
+    background-color: var(--card-bg);
+    border-radius: 10px;
+    padding: 3rem;
+    margin-bottom: 2rem;
+}
+
+.header-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}

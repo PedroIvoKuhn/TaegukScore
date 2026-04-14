@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Detalhes do Torneio</title>
+  <link rel="stylesheet" href="/css/index.css"> <style>
+    .category-block { margin-top: 2rem; }
+    .athlete-list { list-style-type: decimal; padding-left: 2rem; }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <a href="/" class="brand">
+      <img src="/videos/Taeguk score.png" alt="TaegukScore Logo">
+      TaegukScore
+    </a>
+    <div class="nav-auth">
+      <div id="nav-logged-out"><button id="login-btn">Login do Árbitro</button></div>
+      <div id="nav-logged-in" style="display: none;">
+        <span id="username-display" style="margin-right: 1rem;"></span>
+        <button id="logout-btn">Logout</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="tournament-list" style="padding: 2rem;">
+    <div id="action-buttons"></div>
+    <h1 id="tournament-name">Carregando torneio...</h1>
+    <p><strong>Local:</strong> <span id="tournament-location"></span></p>
+    <p><strong>Descrição:</strong> <span id="tournament-description"></span></p>
+    <p><strong>Descrição:</strong> <span id="tournament-referees"></span></p>
+    <a id="open-scoreboard-link" href="../pages/scoreboard.html?tournamentId=2" target="_blank" class="button">Abrir Placar</a>
+
+    <div id="categories-container" style="margin-top: 2rem;">
+      </div>
+  </main>
+
+  <script src="/scripts/tournament.js"></script>
+</body>
+</html>

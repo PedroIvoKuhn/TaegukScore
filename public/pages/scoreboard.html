@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Placar</title>
+  <link rel="stylesheet" href="../css/scoreboard.css">
+</head>
+<body>
+  <section id="live-score-view">
+        <div class="top-bar">
+          <h3 id="current-athlete-name">Aguardando atleta...</h3>
+          <p id="current-category-name"></p>
+        </div>
+        <div class="main-content">
+          <div class="referess-container">
+            <div id="individual-scores-container"></div>
+          </div>
+          <div class="main-scores">
+            <h1 id="score" class="score grid-item">-</h1>
+            <h3 id="presentationAvg" class="presentationAvg grid-item">-</h3>
+            <h3 id="precisionAvg" class="precisionAvg grid-item">-</h3>
+          </div>
+        </div>
+      </div>
+  </section>
+
+  <div id="leaderboard-view" style="display: none; padding: 2rem;">
+    <h1 id="leaderboard-title"></h1>
+    <ol id="leaderboard-list" style="list-style-position: inside;"></ol>
+  </div>
+
+  <div id="video-view" style="display: none; width: 100vw; height: 100vh; background-color: black; display: flex; justify-content: center; align-items: center;">
+    <video 
+      id="looping-video"
+      src="/videos/anuncio.mp4" 
+      style="width: 100%; height: 100%; object-fit: contain;"
+      autoplay 
+      loop 
+      muted 
+      playsinline>
+    </video>
+  </div>
+
+  <script src="/socket.io-client/socket.io.min.js"></script>
+  <script src="../scripts/scoreboard.js"></script>
+</body>
+</html>
