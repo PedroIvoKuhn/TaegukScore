@@ -6,15 +6,6 @@
   <title>Painel de Controle do Torneio</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <link rel="stylesheet" href="../css/grades.css">
-  <style>
-    body { display: flex; height: 100vh; }
-    .sidebar { width: 40%; overflow-y: auto; background: #f0f0f0; padding: 1rem; }
-    .main-content { width: 60%; padding: 1rem; }
-    .athlete-item { padding: 0.8rem; margin-bottom: 0.5rem; border: 1px solid #ccc; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; }
-    .athlete-item.completed { background-color: #d4edda; }
-    .present-btn { padding: 0.5rem; cursor: pointer; }
-    #current-athlete-info { background: #eee; padding: 1rem; margin-bottom: 1rem; border-radius: 5px; }
-  </style>
 </head>
 <body>
   <aside class="sidebar">
@@ -24,10 +15,12 @@
 
   <main class="main-content">
     <h1>Painel de Notas</h1>
-    <a id="open-scoreboard-link" href="../pages/scoreboard.html" target="_blank" class="button">Abrir Placar</a>
-    <button id="clear-scoreboard-btn" class="button" style="background-color: #c82333;">Limpar Placar</button>
-    <button id="play-video-btn" class="button" style="background-color: #007bff;">Rodar Anúncio</button>
-    <button id="download-report-btn" class="button" style="background-color: #17a2b8;">Baixar Relatório</button>
+    <div class="header-actions">
+      <a id="open-scoreboard-link" href="../pages/scoreboard.html" target="_blank" class="button">Abrir Placar</a>
+      <button id="clear-scoreboard-btn" class="button" style="background-color: var(--vermelho);">Limpar Placar</button>
+      <button id="play-video-btn" class="button" style="background-color: var(--azul);">Rodar Anúncio</button>
+      <button id="download-report-btn" class="button" style="background-color: var(--verde);">Baixar Relatório</button>
+    </div>
     
     <div id="current-athlete-info">
       <h3>Atleta se apresentando: <span id="current-athlete-name">Nenhum</span></h3>

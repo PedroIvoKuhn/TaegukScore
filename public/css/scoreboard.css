@@ -31,7 +31,9 @@ html, body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    height: 15vh;
+    min-height: 15vh;
+    height: auto;
+    text-align: center;
     background-color: var(--roxo);
 }
 
@@ -43,6 +45,10 @@ html, body {
     font-size: 2.5em;
     font-weight: bold;
     margin: 0;
+    line-height: 1.1;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    max-width: 100%;
 }
 
 #current-category-name {

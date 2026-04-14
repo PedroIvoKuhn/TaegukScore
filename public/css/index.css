@@ -1,10 +1,15 @@
 :root{
-    --Cinza6C:rgb(242, 242, 247);
-    --Cinza2C: rgb(174, 174, 178);
-    --Cinza1C: rgb(142, 142, 147);
-    --CianoC: rgb(0, 192, 232);
-    --CianoE: rgb(0, 126, 174);
+    --roxo: rgb(86, 74, 222);
+    --vermelho: rgb(233, 21, 45);
+    --azul: rgb(30, 110, 244);
+    --verde: rgb(0, 137, 50);
+    --bg-color: #484848;
+    --card-bg: #2B2B2B;
+    --text-primary: #FFFFFF;
+    --text-secondary: #CCCCCC;
+    --navbar-bg: #1A1A1A;
 }
+
 * {
     margin: 0;
     padding: 0;
@@ -14,78 +19,154 @@
 html {
     font-size: 62.5%;
     scroll-behavior: smooth;
-    background-color: var(--Cinza6C);
-    font-family: Arial; 
+    background-color: var(--bg-color);
+    font-family: 'Segoe UI', Inter, Arial, sans-serif;
+    color: var(--text-primary);
 }
 
 body {
     height: 100vh;
-    display: block;
-    justify-content: center;
-    align-items: center;
+    display: flex;
+    flex-direction: column;
 }
 
 h1 {
-    font-size: 5rem;
+    font-size: 4rem;
+    margin-bottom: 2rem;
+    color: var(--text-primary);
+}
+
+h2 {
+    font-size: 2.5rem;
+    color: var(--text-primary);
+    margin-bottom: 1.5rem;
 }
 
 button, 
 .button {
-    background-color: transparent;
-    border-radius: 10px;
-    border-style: none;
+    background-color: var(--roxo);
+    border-radius: 6px;
+    border: none;
     color: white;
-    font-size: 2.9rem;
-    transition: all 300ms ease-in-out;
+    font-size: 1.8rem;
+    font-weight: 600;
+    padding: 12px 24px;
+    transition: all 200ms ease-in-out;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 button:hover,
 .button:hover {
-    cursor: pointer;
-    background-color: var(--Cinza2C);
+    background-color: #6a5eff; /* Lighter Roxo */
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(86, 74, 222, 0.4);
+}
+
+/* Specific red/danger button */
+.button-danger {
+    background-color: var(--vermelho);
+}
+.button-danger:hover {
+    background-color: #ff334b;
+    box-shadow: 0 4px 12px rgba(233, 21, 45, 0.4);
 }
 
 .section {
     text-align: center;
 }
 
+/* Navbar styles */
 .navbar { 
     display: flex; 
     justify-content: space-between; 
     align-items: center; 
-    background-color: var(--Cinza1C); 
+    background-color: var(--navbar-bg); 
     color: white; 
-    padding: 1rem 2rem; 
+    padding: 1.2rem 3rem; 
+    box-shadow: 0 2px 10px rgba(0,0,0,0.5);
 }
     
-.navbar a { 
+.navbar .brand { 
+    display: flex;
+    align-items: center;
     color: white; 
     text-decoration: none; 
-    font-size: 2rem; 
+    font-size: 2.4rem; 
+    font-weight: bold;
+    gap: 15px;
+}
+
+.navbar .brand img {
+    height: 40px;
+    width: auto;
 }
     
+.nav-auth {
+    display: flex;
+    align-items: center;
+}
+
 .nav-auth button { 
-    font-size: 1.5rem; 
-    padding: 0.8rem; 
-    cursor: pointer; 
+    font-size: 1.4rem; 
+    padding: 0.8rem 1.6rem; 
 }
 
 #username-display {
-    margin-right: 1rem;
+    margin-right: 1.5rem;
+    font-size: 1.6rem;
+    font-weight: 500;
 }
     
+/* Main Container */
+main {
+    flex: 1;
+    padding: 3rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+}
+
 .tournament-list { 
-    padding: 2rem; 
+    margin-top: 2rem;
 }
     
 .tournament-card { 
-    background: #f0f0f0; 
-    border: 1px solid #ddd; 
-    padding: 1.5rem; 
-    margin-bottom: 1rem;
+    background: var(--card-bg); 
+    border: 1px solid #444; 
+    padding: 2rem; 
+    margin-bottom: 2rem;
     border-radius: 8px; 
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    transition: transform 0.2s, box-shadow 0.2s;
 }
-    
+
+.tournament-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+}
+
+.tournament-card h3 {
+    font-size: 2.4rem;
+    color: var(--roxo);
+    margin-bottom: 1rem;
+}
+
+.tournament-card p {
+    font-size: 1.6rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.8rem;
+    line-height: 1.5;
+}
+
+.tournament-card a.button {
+    margin-top: 1.5rem;
+}
+
+/* Modals */
 .modal { 
     display: none; 
     position: fixed; 
@@ -94,26 +175,44 @@ button:hover,
     top: 0; 
     width: 100%; 
     height: 100%; 
-    background-color: rgba(0,0,0,0.5); 
+    background-color: rgba(0,0,0,0.7); 
     justify-content: center; 
     align-items: center; 
 }
     
 .modal-content { 
-    background-color: var(--Cinza6C); 
+    background-color: var(--card-bg); 
     padding: 3rem; 
-    border-radius: 5px; 
+    border-radius: 12px; 
     width: 90%; 
     max-width: 500px; 
-    display: grid;
-    gap: 10px;
-    font-size: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    font-size: 1.8rem;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+    border: 1px solid #444;
 }
     
+.modal-content > div:first-child {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #444;
+    padding-bottom: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
 .close-button { 
-    float: right; 
     font-size: 3rem; 
     cursor: pointer; 
+    color: var(--text-secondary);
+    transition: color 0.2s;
+    line-height: 1;
+}
+
+.close-button:hover {
+    color: white;
 }
 
 #login-form,
@@ -124,57 +223,83 @@ button:hover,
     gap: 20px;
 }
 
-#login-form input,
-#create-referee-form input,
-#create-tournament-form input {
-    width: 100%;                  
-    border: none;            
-    border-bottom: 2px solid var(--Cinza1C); 
-    background-color: transparent;
-    padding: 8px 0;               
-    font-size: 1.8rem;            
-    outline: none;                
-    box-sizing: border-box;
+.form-group {
+    margin-bottom: 1.5rem;
 }
 
-#login-form input:focus,
-#create-referee-form input:focus,
-#create-tournament-form input:focus {
-    border-bottom-color: var(--CianoC);
+label {
+    display: block;
+    font-size: 1.5rem;
+    margin-bottom: 0.8rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+input, select, textarea {
+    width: 100%;                  
+    border: 1px solid #555;            
+    background-color: #1a1a1a;
+    padding: 12px 15px;               
+    font-size: 1.6rem; 
+    color: white;           
+    outline: none;                
+    box-sizing: border-box;
+    border-radius: 6px;
+    font-family: inherit;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+input:focus, select:focus, textarea:focus {
+    border-color: var(--roxo);
+    box-shadow: 0 0 0 2px rgba(86, 74, 222, 0.3);
+}
+
+select[multiple] {
+    padding: 10px;
 }
 
 .form-actions {
     text-align: center;
-}
-
-#login-error {
-    color: red; 
     margin-top: 1rem;
 }
 
-#login-form button,
-#admin-controls button,
-#create-referee-form button,
-#create-tournament-form button {
-    background-color: var(--CianoC);
-    color: white;
-    border: none;
-    padding: 12px 25px;
-    font-size: 1.6rem;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s;
+.form-error {
+    color: #ff6b6b; 
+    font-size: 1.4rem;
+    margin-top: 1.2rem;
 }
-
-#login-form button:hover,
-#create-referee-form button:hover,
-#create-tournament-form button:hover {
-    background-color: var(--CianoE);
+#login-error, .referee-error {
+    color: #ff6b6b; 
+    font-size: 1.4rem;
+    margin-top: 1.2rem;
 }
 
 #admin-controls {
     display: none; 
-    padding: 1.5rem; 
-    background-color: var(--Cinza6C);
-    font-size: 2rem;
+    padding: 2.5rem; 
+    background-color: var(--card-bg);
+    border: 1px solid #444;
+    border-radius: 8px;
+    margin-bottom: 3rem;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    align-items: center;
+    gap: 1.5rem;
+}
+
+#admin-controls h2 {
+    margin: 0;
+    margin-right: 2rem;
+}
+
+/* Align admin buttons side by side if possible */
+.admin-actions {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+/* File input custom styling wrapper to look a bit nicer */
+input[type="file"] {
+    padding: 8px;
+    background-color: #1a1a1a;
 }

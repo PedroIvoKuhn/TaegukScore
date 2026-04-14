@@ -69,12 +69,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     for (let i = 0; i < refereeCount; i++) {
       const referee = tournamentData.referees[i].referee;
       scoresForm.innerHTML += `
-        <h4>Árbitro: ${referee.username}</h4>
-        <div>
-          <label for="precision-${i}">Precisão (0-4):</label>
-          <input type="number" step="0.01" min="0" max="4" id="precision-${i}" name="precision" required>
-          <label for="presentation-${i}">Apresentação (0-6):</label>
-          <input type="number" step="0.01" min="0" max="6" id="presentation-${i}" name="presentation" required>
+        <div style="margin-bottom: 2rem; background-color: #2B2B2B; padding: 2rem; border-radius: 12px; border-left: 4px solid var(--roxo);">
+          <h3 style="font-size: 2.4rem; color: white; margin-bottom: 1.5rem;">Árbitro: <span style="color: var(--roxo)">${referee.username}</span></h3>
+          <div style="display: flex; gap: 2rem; align-items: flex-end;">
+            <div style="flex: 1;">
+              <label for="precision-${i}" style="margin-bottom: 0.5rem; display: block; font-size: 1.6rem; color: var(--text-secondary);">Precisão (0-4):</label>
+              <input type="number" step="0.01" min="0" max="4" id="precision-${i}" name="precision" required>
+            </div>
+            <div style="flex: 1;">
+              <label for="presentation-${i}" style="margin-bottom: 0.5rem; display: block; font-size: 1.6rem; color: var(--text-secondary);">Apresentação (0-6):</label>
+              <input type="number" step="0.01" min="0" max="6" id="presentation-${i}" name="presentation" required>
+            </div>
+          </div>
         </div>
       `;
     }

@@ -157,6 +157,7 @@ exports.getCategoryResults = async (req, res) => {
         _avg: {
           finalScore: true,
           precisionAvg: true,
+          presentationAvg: true,
           rawScoreSum: true,
         },
       });
@@ -173,6 +174,7 @@ exports.getCategoryResults = async (req, res) => {
           athlete: { name: athleteInfo.name },
           finalScore: result._avg.finalScore,
           precisionAvg: result._avg.precisionAvg,
+          presentationAvg: result._avg.presentationAvg,
           rawScoreSum: result._avg.rawScoreSum,
         };
       }).sort((a, b) => b.finalScore - a.finalScore);
